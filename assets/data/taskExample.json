@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Investment",
+    "description": "This new upcoming company needs a £{m} investment in order to grow into a bigger thing",
+    "resources" : [
+      {"type": "Money", "amount": 20000}
+    ],
+    "steps": [],
+    "time" : 0,
+    "isSubTask" : false
+
+  },
+  {
+    "name": "Investment",
+    "description": "This new upcoming company needs a £{m} investment in order to grow into a bigger thing",
+    "resources" : [
+      {"type": "Money", "amount": 100000}
+    ],
+    "steps": [],
+    "time" : 0,
+    "isSubTask" : false
+
+  },
+  {
+    "name": "Loan",
+    "description": "This new upcoming company needs a £{m} loan in order to grow into a bigger thing",
+    "resources" : [
+      {"type": "Money", "amount": 20000}
+    ],
+    "steps": [],
+    "time" : 0,
+    "isSubTask" : false
+
+  },
+  {
+    "name": "Increase Profit",
+    "description": "This new upcoming company aiming to increase profit and spread its business",
+    "resources": [],
+    "steps" :
+      [
+        {
+          "name" : "Increase Profit : Marketing",
+          "description" : "Training up a marketing team cost £{m} and require {p} people",
+          "resources" : [
+            {"type": "Money", "amount": 20000},
+            {"type": "People", "amount": 2}
+          ],
+          "steps": [],
+          "time" : 1,
+          "isSubTask" : true
+
+        } ,
+        {
+          "name" : "Increase Profit : Upgrading",
+          "description" : "Introduce new technology/machinery",
+          "resources" : [
+            {"type": "Money", "amount": 20000}
+          ],
+          "steps": [],
+          "time" : 3,
+          "isSubTask" : true
+        }
+
+      ],
+    "time" : 0,
+    "isSubTask" : false
+
+  },
+  {
+    "name": "Media Training",
+    "description": "Setup media training work shop cost £{m} and will involve {p} people to setup",
+    "resources" : [
+      {"type": "Money", "amount": 20000},
+      {"type": "People", "amount": 2}
+    ],
+    "steps": [],
+    "time" : 2,
+    "isSubTask" : false
+  },
+  {
+    "name": "Invest",
+    "description": "This new upcoming company is aiming to increase its ...",
+    "resources" : [
+    ],
+    "steps": [
+      {
+        "name" : "Placeholder",
+        "description" : "Placeholder needs {m} ZAR",
+        "resources" : [
+          {"type": "Money", "amount": 10}
+        ],
+        "steps": [],
+        "time" : 3,
+        "isSubTask" : true
+      }
+    ],
+    "time" : 0,
+    "isSubTask" : false
+
+  }
+]
+

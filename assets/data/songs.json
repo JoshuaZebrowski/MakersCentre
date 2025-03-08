@@ -1,0 +1,29 @@
+{
+  "songs": [
+    {
+      "name": "Flashing Lights",
+      "texturePath": "ui/cds/flashingLights.png",
+      "soundPath": "audio/cds/flashingLights.mp3"
+    },
+    {
+      "name": "Ghost Town",
+      "texturePath": "ui/cds/ghostTown.png",
+      "soundPath": "audio/cds/ghostTown.mp3"
+    },
+    {
+      "name": "Not Like Us",
+      "texturePath": "ui/cds/notLikeUs.png",
+      "soundPath": "audio/cds/notLikeUs.mp3"
+    },
+    {
+      "name": "California Gurls",
+      "texturePath": "ui/cds/californiaGurls.png",
+      "soundPath": "audio/cds/californiaGurls.mp3"
+    },
+    {
+      "name": "The Battle of the Pelennor Fields",
+      "texturePath": "ui/cds/theBattleOfThePelennorFields.png",
+      "soundPath": "audio/cds/theBattleOfThePelennorFields.mp3"
+    }
+  ]
+}
