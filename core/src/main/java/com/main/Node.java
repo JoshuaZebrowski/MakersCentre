@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Node
-{
+public class Node {
     float x, y;
     float size;
     List<Node> links;
@@ -18,9 +17,7 @@ public class Node
     boolean isJobCentre;
     boolean highlighted = false;
     List<Node> subNodes;
-
     Task task;
-
 
     Node(float x, float y, String id, float size) {
         this.x = x;
@@ -57,24 +54,41 @@ public class Node
         return occupants.contains(player);
     }
 
-    public void deOccupy(String name){
+    public void deOccupy(String name) {
         Iterator<Player> iterator = occupants.iterator();
-        if(occupants.size() -1 == 0){
+        if (occupants.size() - 1 == 0) {
             occupied = false;
-
             updateColour();
         }
         while (iterator.hasNext()) {
             Player player = iterator.next();
             if (player.name.equals(name)) {
-                iterator.remove();  // Safely remove the player while iterating
-                break;  // Stop after finding the first match
+                iterator.remove();
+                break;
             }
         }
     }
 
     public void updateColour() {
-        this.color = isJobCentre ? Color.YELLOW : (task != null ? Color.CORAL : Color.BLUE);
+        if (isJobCentre) {
+            this.color = Color.YELLOW; // Starting node is yellow
+        } else if (task != null) {
+            switch (task.getCategory()) {
+                case "Financial":
+                    this.color = Color.RED;
+                    break;
+                case "Educational":
+                    this.color = Color.GREEN;
+                    break;
+                case "Business":
+                    this.color = Color.BLUE;
+                    break;
+                default:
+                    this.color = Color.CORAL;
+            }
+        } else {
+            this.color = Color.BLUE; // Default color for nodes without tasks
+        }
     }
 
     public Task getTask() {
@@ -82,10 +96,13 @@ public class Node
     }
 
     public void setTask(Task task) {
-        this.task = task;
+        if (this.task == null) { // Only set the task if it hasn't been set before
+            this.task = task;
+            updateColour(); // Update the node's color based on the task
+        }
     }
 
-    public boolean isHighlighted(){
+    public boolean isHighlighted() {
         return highlighted;
     }
 
@@ -93,4 +110,3 @@ public class Node
         this.highlighted = highlighted;
     }
 }
-

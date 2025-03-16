@@ -1,102 +1,362 @@
 [
   {
-    "name": "Investment",
-    "description": "This new upcoming company needs a £{m} investment in order to grow into a bigger thing",
-    "resources" : [
-      {"type": "Money", "amount": 20000}
+    "name": "Build a School",
+    "description": "Construct a new school to improve education in the area. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 500000 },
+      { "type": "People", "amount": 10 }
     ],
     "steps": [],
-    "time" : 0,
-    "isSubTask" : false
-
+    "time": 3,
+    "isSubTask": false,
+    "category": "Educational"
   },
   {
-    "name": "Investment",
-    "description": "This new upcoming company needs a £{m} investment in order to grow into a bigger thing",
-    "resources" : [
-      {"type": "Money", "amount": 100000}
+    "name": "Train Teachers",
+    "description": "Provide training for local teachers to improve education quality. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 200000 },
+      { "type": "People", "amount": 5 }
     ],
     "steps": [],
-    "time" : 0,
-    "isSubTask" : false
-
+    "time": 2,
+    "isSubTask": false,
+    "category": "Educational"
   },
   {
-    "name": "Loan",
-    "description": "This new upcoming company needs a £{m} loan in order to grow into a bigger thing",
-    "resources" : [
-      {"type": "Money", "amount": 20000}
+    "name": "Provide Scholarships",
+    "description": "Offer scholarships to students to encourage higher education. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 300000 },
+      { "type": "People", "amount": 3 }
     ],
     "steps": [],
-    "time" : 0,
-    "isSubTask" : false
-
+    "time": 1,
+    "isSubTask": false,
+    "category": "Educational"
   },
   {
-    "name": "Increase Profit",
-    "description": "This new upcoming company aiming to increase profit and spread its business",
-    "resources": [],
-    "steps" :
-      [
-        {
-          "name" : "Increase Profit : Marketing",
-          "description" : "Training up a marketing team cost £{m} and require {p} people",
-          "resources" : [
-            {"type": "Money", "amount": 20000},
-            {"type": "People", "amount": 2}
-          ],
-          "steps": [],
-          "time" : 1,
-          "isSubTask" : true
-
-        } ,
-        {
-          "name" : "Increase Profit : Upgrading",
-          "description" : "Introduce new technology/machinery",
-          "resources" : [
-            {"type": "Money", "amount": 20000}
-          ],
-          "steps": [],
-          "time" : 3,
-          "isSubTask" : true
-        }
-
-      ],
-    "time" : 0,
-    "isSubTask" : false
-
-  },
-  {
-    "name": "Media Training",
-    "description": "Setup media training work shop cost £{m} and will involve {p} people to setup",
-    "resources" : [
-      {"type": "Money", "amount": 20000},
-      {"type": "People", "amount": 2}
+    "name": "Build a Library",
+    "description": "Construct a library to provide access to educational resources. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 400000 },
+      { "type": "People", "amount": 8 }
     ],
     "steps": [],
-    "time" : 2,
-    "isSubTask" : false
+    "time": 4,
+    "isSubTask": false,
+    "category": "Educational"
   },
   {
-    "name": "Invest",
-    "description": "This new upcoming company is aiming to increase its ...",
-    "resources" : [
+    "name": "Develop Online Learning Platform",
+    "description": "Create an online platform for remote learning. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 600000 },
+      { "type": "People", "amount": 12 }
     ],
-    "steps": [
-      {
-        "name" : "Placeholder",
-        "description" : "Placeholder needs {m} ZAR",
-        "resources" : [
-          {"type": "Money", "amount": 10}
-        ],
-        "steps": [],
-        "time" : 3,
-        "isSubTask" : true
-      }
+    "steps": [],
+    "time": 5,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Provide School Supplies",
+    "description": "Distribute school supplies to students in need. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 100000 },
+      { "type": "People", "amount": 4 }
     ],
-    "time" : 0,
-    "isSubTask" : false
-
+    "steps": [],
+    "time": 1,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Upgrade School Facilities",
+    "description": "Renovate and upgrade existing school facilities. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 700000 },
+      { "type": "People", "amount": 15 }
+    ],
+    "steps": [],
+    "time": 6,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Organize Science Fair",
+    "description": "Host a science fair to encourage student innovation. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 150000 },
+      { "type": "People", "amount": 6 }
+    ],
+    "steps": [],
+    "time": 2,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Provide After-School Programs",
+    "description": "Offer after-school programs to support student development. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 250000 },
+      { "type": "People", "amount": 7 }
+    ],
+    "steps": [],
+    "time": 3,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Build a Community Center",
+    "description": "Construct a community center for educational workshops. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 800000 },
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 7,
+    "isSubTask": false,
+    "category": "Educational"
+  },
+  {
+    "name": "Start a Microfinance Program",
+    "description": "Provide small loans to local entrepreneurs. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1000000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 5,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Build a Bank",
+    "description": "Construct a bank to support financial services. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1500000 },
+      { "type": "People", "amount": 15 }
+    ],
+    "steps": [],
+    "time": 6,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Provide Financial Literacy Training",
+    "description": "Educate the community on managing finances. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 200000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 2,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Invest in Local Businesses",
+    "description": "Provide funding to local businesses to boost the economy. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1200000 },
+      { "type": "People", "amount": 12 }
+    ],
+    "steps": [],
+    "time": 4,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Create a Savings Program",
+    "description": "Encourage community members to save money. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 300000 },
+      { "type": "People", "amount": 6 }
+    ],
+    "steps": [],
+    "time": 3,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Build a Stock Exchange",
+    "description": "Establish a local stock exchange to attract investors. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 2000000 },
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 8,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Provide Insurance Services",
+    "description": "Offer insurance to protect community assets. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 500000 },
+      { "type": "People", "amount": 8 }
+    ],
+    "steps": [],
+    "time": 4,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Develop a Budgeting App",
+    "description": "Create an app to help people manage their finances. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 400000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 5,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Host Financial Workshops",
+    "description": "Organize workshops to teach financial skills. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 150000 },
+      { "type": "People", "amount": 4 }
+    ],
+    "steps": [],
+    "time": 2,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Build a Credit Union",
+    "description": "Establish a credit union to provide affordable loans. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1000000 },
+      { "type": "People", "amount": 12 }
+    ],
+    "steps": [],
+    "time": 6,
+    "isSubTask": false,
+    "category": "Financial"
+  },
+  {
+    "name": "Start a Local Business",
+    "description": "Launch a small business to create jobs. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 500000 },
+      { "type": "People", "amount": 8 }
+    ],
+    "steps": [],
+    "time": 4,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Build a Factory",
+    "description": "Construct a factory to produce goods locally. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 2000000 },
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 8,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Open a Retail Store",
+    "description": "Start a retail store to sell local products. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 300000 },
+      { "type": "People", "amount": 6 }
+    ],
+    "steps": [],
+    "time": 3,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Develop a Marketing Campaign",
+    "description": "Create a campaign to promote local businesses. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 200000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 2,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Build a Warehouse",
+    "description": "Construct a warehouse to store goods. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1000000 },
+      { "type": "People", "amount": 15 }
+    ],
+    "steps": [],
+    "time": 6,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Provide Business Training",
+    "description": "Offer training to aspiring entrepreneurs. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 150000 },
+      { "type": "People", "amount": 4 }
+    ],
+    "steps": [],
+    "time": 2,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Start a Delivery Service",
+    "description": "Launch a delivery service to support local businesses. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 400000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 4,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Build a Tech Hub",
+    "description": "Create a hub for tech startups. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1500000 },
+      { "type": "People", "amount": 18 }
+    ],
+    "steps": [],
+    "time": 7,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Organize a Trade Fair",
+    "description": "Host a trade fair to showcase local products. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 250000 },
+      { "type": "People", "amount": 7 }
+    ],
+    "steps": [],
+    "time": 3,
+    "isSubTask": false,
+    "category": "Business"
+  },
+  {
+    "name": "Start a Tourism Business",
+    "description": "Launch a tourism business to attract visitors. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 600000 },
+      { "type": "People", "amount": 12 }
+    ],
+    "steps": [],
+    "time": 5,
+    "isSubTask": false,
+    "category": "Business"
   }
 ]
-

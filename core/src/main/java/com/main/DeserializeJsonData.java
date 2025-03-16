@@ -13,5 +13,4 @@ public class DeserializeJsonData {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(file, new TypeReference<ArrayList<Task>>() {});
     }
-
 }

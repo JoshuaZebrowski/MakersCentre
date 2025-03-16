@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameSetup implements Screen {
     private Stage stage;
@@ -34,7 +35,12 @@ public class GameSetup implements Screen {
     private float yPosition = Gdx.graphics.getHeight() / 2; // Y position of the circles and buttons
     private float yOffset = 100; // Offset for positioning the TextField below the circle
 
+    private List<Task> tasks; // List to store tasks loaded from JSON
+
     public void show() {
+        // Load tasks from JSON
+        tasks = ResourceLoader.loadTask(); // Assuming ResourceLoader.loadTask() returns a List<Task>
+
         // Set up the Stage and Skin (used for UI elements like buttons)
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
@@ -70,23 +76,21 @@ public class GameSetup implements Screen {
 
                 boolean a = true;
 
-                System.out.println(nameFields.get(0));
-                for(int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++){
-                    if(nameFields.get(i).getText() == ""
-                    ){
+                for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
+                    if (nameFields.get(i).getText().isEmpty()) { // Use isEmpty() instead of == ""
                         a = false;
                     }
                 }
 
-                if(a){
-                    for(int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
-                        PlayerManager.getInstance().getPlayers().get(i).setName(nameFields.get(i).getText()+"#"+i);
+                if (a) {
+                    for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
+                        PlayerManager.getInstance().getPlayers().get(i).setName(nameFields.get(i).getText() + "#" + i);
                     }
 
-                    Board board = new Board();
+                    // Create the board with the list of tasks
+                    Board board = new Board(new ArrayList<>(tasks)); // Pass the tasks to the Board
                     ((Game) Gdx.app.getApplicationListener()).setScreen(new Main(board.getNodes()));
                 }
-
             }
         });
 
@@ -94,7 +98,6 @@ public class GameSetup implements Screen {
         plusButton = new TextButton("+", skin);
         plusButton.setSize(50, 50);
         plusButton.setPosition(playerPositions.get(0).x + circleRadius + 20, yPosition);
-
 
         // Create the minus Button
         minusButton = new TextButton("-", skin);
@@ -106,12 +109,11 @@ public class GameSetup implements Screen {
         }else{
             minusButton.setVisible(true);
         }
+
         // Add a click listener for the button
         plusButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-
-
                 if(PlayerManager.getInstance().getPlayers().size() == 1){
                     minusButton.setVisible(false);
                 }else{
@@ -138,7 +140,6 @@ public class GameSetup implements Screen {
 
                     if(PlayerManager.getInstance().getPlayers().size() == 4){
                         plusButton.setVisible(false);
-
                     }
                 }
             }
@@ -147,21 +148,17 @@ public class GameSetup implements Screen {
         minusButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-
                 if (PlayerManager.getInstance().getPlayers().size() > 1) {
-
                     if(PlayerManager.getInstance().getPlayers().size() == 1){
                         minusButton.setVisible(false);
                     }else{
                         minusButton.setVisible(true);
                     }
 
-
-                    // Add a new player to the list
+                    // Remove the last player from the list
                     playerPositions.remove(PlayerManager.getInstance().getPlayers().size() - 1);
                     nameFields.remove(PlayerManager.getInstance().getPlayers().size() - 1);
                     PlayerManager.getInstance().getPlayers().remove(PlayerManager.getInstance().getPlayers().size() - 1);
-
 
                     float newX = playerPositions.get(playerPositions.size() - 1).x + circleRadius * 2 + spacing;
 
@@ -171,7 +168,6 @@ public class GameSetup implements Screen {
 
                     if(PlayerManager.getInstance().getPlayers().size() < 4){
                         plusButton.setVisible(true);
-
                     }
                 }
             }
@@ -184,38 +180,32 @@ public class GameSetup implements Screen {
         stage.addActor(nameFields.get(0)); // Add the first player's name field
 
         // Add listeners for circle clicks to open color picker
+        ClickListener colorPickerListener = new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.log("Debug", "Circle Clicked");
+                for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
+                    float playerX = playerPositions.get(i).x;
+                    float playerY = playerPositions.get(i).y;
+                    final Player player = PlayerManager.getInstance().getPlayers().get(i);
 
-
-            // Listener for player circles to open color picker
-            ClickListener colorPickerListener = new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    Gdx.app.log("Debug", "Circle Clicked");
-                    for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
-                        float playerX = playerPositions.get(i).x;
-                        float playerY = playerPositions.get(i).y;
-                        final Player player = PlayerManager.getInstance().getPlayers().get(i);
-
-                        if (isClickInsideCircle(x, y, playerX, playerY, circleRadius)) {
-                            // Show color picker for the clicked player
-                            showColorPicker(player);
-                        }
+                    if (isClickInsideCircle(x, y, playerX, playerY, circleRadius)) {
+                        // Show color picker for the clicked player
+                        showColorPicker(player);
                     }
-
-
                 }
-            };
-            stage.addListener(colorPickerListener);
-
+            }
+        };
+        stage.addListener(colorPickerListener);
     }
 
     private boolean checkPlayerTakenColour(String hex){
         for (Player player : PlayerManager.getInstance().getPlayers()) {
             if(player.color.equals(Color.valueOf(hex))){
-
                 return true;
             }
-        }return false;
+        }
+        return false;
     }
 
     private boolean isClickInsideCircle(float clickX, float clickY, float circleX, float circleY, float radius) {
@@ -224,9 +214,6 @@ public class GameSetup implements Screen {
     }
 
     private void showColorPicker(Player player) {
-        // condition to check if it was just used so if the picker is overlapping the player then
-        // it won't be triggered again with the next click
-
         // Create a color picker dialog
         final Dialog colorPickerDialog = new Dialog("Choose Color", skin);
         colorPickerDialog.getContentTable().defaults().space(10);
@@ -242,9 +229,6 @@ public class GameSetup implements Screen {
         } else {
             colorTexture4 = new Texture(Gdx.files.internal("ui/colourPicker4.png"));
         }
-
-        // Helper method to create ImageButton styles
-
 
         // Create image buttons for the textures
         ImageButton colorButton1 = new ImageButton(createButtonStyle(colorTexture1));
@@ -284,7 +268,6 @@ public class GameSetup implements Screen {
                     player.color = Color.valueOf("ff29be");
                 }
                 colorPickerDialog.hide();
-
             }
         });
 
@@ -307,7 +290,6 @@ public class GameSetup implements Screen {
                     colorTexture3.dispose();
                     colorTexture4.dispose();
                 }
-
             }
         });
     }
@@ -327,7 +309,6 @@ public class GameSetup implements Screen {
             MathUtils.random(0.5f, 1f),  // Blue channel (light range)
             1f                           // Alpha channel (fully opaque)
         );
-
     }
 
     @Override
@@ -376,6 +357,5 @@ public class GameSetup implements Screen {
 
     @Override
     public void dispose() {
-
     }
 }

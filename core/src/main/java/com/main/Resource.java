@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Gdx;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Resource {
@@ -19,25 +20,26 @@ public class Resource {
         return type;
     }
 
-
     public double getAmount() {
         return amount;
+    }
+
+    public void deductAmount(double toDeduct) {
+        amount -= toDeduct;
+        Gdx.app.log("Resource", "Amount deducted from " + type + " is " + toDeduct + " amount is now " + amount);
     }
 
     public boolean isCompleted() {
         return completed;
     }
+
     public void setCompleted() {
         this.completed = true;
     }
-
 
     public void addAmount(double amount) {
         this.amount += amount;
     }
 
-    public void removeAmount(double amount) {
-        this.amount -= amount;
-    }
 
 }
