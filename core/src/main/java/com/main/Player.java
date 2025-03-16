@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
@@ -23,6 +24,9 @@ public class Player {
     int taskSpeed; // Represents the number of turns a player must wait before starting a new task
     float communityMorale; // Represents the workforce's morale, must stay above 0%
 
+    // this will track visited nodes to prevent the user from moving backwards on the board
+    private List<Node> visitedNodes;
+
     public Player(String name, Color color) {
         this.name = name;
         this.color = color;
@@ -34,6 +38,25 @@ public class Player {
         this.rand2 = new Resource("People", 1000);
         this.taskSpeed = 0; // Initially, no task is in progress
         this.communityMorale = 100; // Start with 100% morale
+
+        this.visitedNodes = new ArrayList<>(); // Initialize the list of visited nodes
+    }
+
+    // Add a method to reset the visited nodes at the start of a new turn
+    public void resetVisitedNodes() {
+        visitedNodes.clear();
+    }
+
+    // Add a method to check if a node has been visited
+    public boolean hasVisited(Node node) {
+        return visitedNodes.contains(node);
+    }
+
+    // Add a method to mark a node as visited
+    public void markVisited(Node node) {
+        if (!visitedNodes.contains(node)) {
+            visitedNodes.add(node);
+        }
     }
 
     public void setPlayerNodeCirclePos(float circleRadius) {
@@ -91,12 +114,15 @@ public class Player {
 
     public void addTask(Task task) {
         if (currentCategory == null) {
-            currentCategory = task.getCategory();
+            currentCategory = task.getCategory(); // Set the current category
+            Gdx.app.log("DEBUG", "Player " + name + " set current category to: " + currentCategory);
         } else if (!currentCategory.equals(task.getCategory())) {
+            Gdx.app.log("DEBUG", "Player " + name + " cannot select a task from a different category.");
             return; // Cannot add tasks from different categories
         }
         taskList.add(task);
         task.setSelected(true); // Mark the task as selected when added
+        Gdx.app.log("DEBUG", "Player " + name + " added task: " + task.getName() + " (Category: " + task.getCategory() + ")");
     }
 
     public boolean hasSubTasks(Task task) {
@@ -147,6 +173,23 @@ public class Player {
         }
     }
 
+    public boolean isCurrentCategoryComplete() {
+        if (currentCategory == null) {
+            Gdx.app.log("DEBUG", "Player " + name + " has no current category.");
+            return true; // No category selected, so it's "complete"
+        }
+
+        // Check if all tasks of the current category are complete
+        for (Task task : taskList) {
+            if (task.getCategory().equals(currentCategory) && !task.isCompleted()) {
+                Gdx.app.log("DEBUG", "Player " + name + " has incomplete task: " + task.getName() + " (Category: " + task.getCategory() + ")");
+                return false; // At least one task in the category is incomplete
+            }
+        }
+
+        Gdx.app.log("DEBUG", "Player " + name + " has completed all tasks in the " + currentCategory + " category.");
+        return true; // All tasks in the category are complete
+    }
 
 
 
@@ -168,5 +211,9 @@ public class Player {
 
     public String getCurrentCategory() {
         return currentCategory;
+    }
+
+    public void setCurrentCategory(String currentCategory) {
+        this.currentCategory = currentCategory;
     }
 }

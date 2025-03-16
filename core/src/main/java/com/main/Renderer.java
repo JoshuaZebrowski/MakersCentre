@@ -175,7 +175,7 @@ public class Renderer {
         batch.end();
     }
 
-    public void renderUI(int turn, int maxMoves, int currentMoves, String currentWeather, String currentSeason, Node currentNode) {
+    public void renderUI(int turn, int maxMoves, int currentMoves, String currentWeather, String currentSeason, Node currentNode, boolean attemptedTaskSelection) {
         batch.setProjectionMatrix(uiCamera.combined);
         batch.begin();
 
@@ -208,26 +208,43 @@ public class Renderer {
         // Draw people (rand2) below money
         font.draw(batch, resourcePeople, 40, viewport.getWorldHeight() - 150);
 
-        // If the task is available to select (not taken and not selected)
-        if (currentNode.getTask() != null && !currentNode.getTask().taskTaken() && !currentNode.getTask().isSelected()) {
-            font.setColor(Color.WHITE);
-            font.getData().setScale(4f);
-            GlyphLayout layout = new GlyphLayout(font, "Task Available to Select. Press 's' to Select.");
-            float centreX = (Gdx.graphics.getWidth() - layout.width) / 2;
-            float centreY = (Gdx.graphics.getHeight() + layout.height) / 2 + 200;
-            font.draw(batch, layout, centreX, centreY);
-            font.getData().setScale(2f);
-        }
+        // Only show task selection prompts if the player has no moves left
+        if (currentMoves >= maxMoves) {
+            // If the task is available to select (not taken and not selected)
+            if (currentNode.getTask() != null && !currentNode.getTask().taskTaken() && !currentNode.getTask().isSelected()) {
+                Player currentPlayer = players.get(turn);
 
-        // If the task is selected but not started
-        if (currentNode.getTask() != null && currentNode.getTask().isSelected() && !currentNode.getTask().isCompleted()) {
-            font.setColor(Color.YELLOW);
-            font.getData().setScale(4f);
-            GlyphLayout layout = new GlyphLayout(font, "Task Selected. Press 's' to Start.");
-            float centreX = (Gdx.graphics.getWidth() - layout.width) / 2;
-            float centreY = (Gdx.graphics.getHeight() + layout.height) / 2 + 200;
-            font.draw(batch, layout, centreX, centreY);
-            font.getData().setScale(2f);
+                // Display the appropriate message based on whether the player attempted to select a task
+                if (attemptedTaskSelection) {
+                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory())) {
+                        font.setColor(Color.WHITE);
+                        font.getData().setScale(4f);
+                        GlyphLayout layout = new GlyphLayout(font, "Task Available to Select. Press 's' to Select Task.");
+                        float centreX = (Gdx.graphics.getWidth() - layout.width) / 2;
+                        float centreY = (Gdx.graphics.getHeight() + layout.height) / 2 + 200;
+                        font.draw(batch, layout, centreX, centreY);
+                    } else {
+                        font.setColor(Color.RED);
+                        font.getData().setScale(4f);
+                        GlyphLayout layout = new GlyphLayout(font, "You can only select " + currentPlayer.getCurrentCategory() + " tasks.");
+                        float centreX = (Gdx.graphics.getWidth() - layout.width) / 2;
+                        float centreY = (Gdx.graphics.getHeight() + layout.height) / 2 + 200;
+                        font.draw(batch, layout, centreX, centreY);
+                    }
+                    font.getData().setScale(2f);
+                } else {
+                    // Only display the initial message if the task is in the same category
+                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory())) {
+                        font.setColor(Color.WHITE);
+                        font.getData().setScale(4f);
+                        GlyphLayout layout = new GlyphLayout(font, "Task Available. Press 's' to Select Task.");
+                        float centreX = (Gdx.graphics.getWidth() - layout.width) / 2;
+                        float centreY = (Gdx.graphics.getHeight() + layout.height) / 2 + 200;
+                        font.draw(batch, layout, centreX, centreY);
+                        font.getData().setScale(2f);
+                    }
+                }
+            }
         }
 
         batch.end();

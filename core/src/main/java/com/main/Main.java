@@ -95,6 +95,7 @@ public class Main implements Screen {
 
     // Tasks
     private ArrayList<Task> task;
+    private boolean attemptedTaskSelection = false; // Tracks if the player tried to select a task
 
     // Timer for no movement left text prevent it from being spammed
     private boolean hasClickedNM = false;
@@ -114,6 +115,8 @@ public class Main implements Screen {
     Boolean selectingNode = false;
 
     private Texture gameBackgroundTexture;
+
+
 
     public Main(List<Node> nodes) {
         this.nodes = nodes;
@@ -196,6 +199,7 @@ public class Main implements Screen {
             Gdx.app.log("Debug", "Node " + i + " Task: " + (node.getTask() != null ? node.getTask().getName() : "No Task"));
             Gdx.app.log("Debug", "Node " + i + " Category: " + (node.getTask() != null ? node.getTask().getCategory() : "No Category"));
         }
+
         int taskId = 0;
         while (true) {
             int a = MathUtils.random(nodes.size() - 1);
@@ -215,50 +219,13 @@ public class Main implements Screen {
         Tooltip.getInstance().addTooltip("DP", "Click on dice to play", TooltipPosition.CLICK_ROLL, true, true);
         Tooltip.getInstance().addTooltip("AT", "Acquire task", "ui/toolTips/keyboard_key_l.png", TooltipPosition.BOTTOM_RIGHT);
 
-        for (Node currentNode : nodes) {
-            Task task = currentNode.getTask();
-            if (task != null && task.getSteps() != null) {
-                List<Task> subtasks = task.getSteps();
-                currentNode.subNodes = new ArrayList<>();
-
-                if (!currentNode.links.isEmpty() || checkLinkedNode(currentNode)) {
-                    Node connectedNode;
-                    if (currentNode.links.isEmpty()) {
-                        connectedNode = getLinkedNode(currentNode);
-                    } else {
-                        connectedNode = currentNode.links.get(0);
-                    }
-                    float dx = (connectedNode.x - currentNode.x) / (subtasks.size() + 1);
-                    float dy = (connectedNode.y - currentNode.y) / (subtasks.size() + 1);
-
-                    for (int i = 0; i < subtasks.size(); i++) {
-                        float subX = currentNode.x + dx * (i + 1);
-                        float subY = currentNode.y + dy * (i + 1);
-                        Node subNode = new Node(subX, subY, currentNode.id + "-sub" + i, currentNode.size / 2);
-                        subNode.setTask(subtasks.get(i));
-                        currentNode.subNodes.add(subNode);
-
-                        currentNode.addLink(subNode);
-                        subNode.addLink(currentNode);
-                        subNode.addLink(connectedNode);
-
-                        for (int j = 0; j < currentNode.subNodes.size(); j++) {
-                            Node otherSubNode = currentNode.subNodes.get(j);
-                            if (otherSubNode != subNode) {
-                                subNode.addLink(otherSubNode);
-                                otherSubNode.addLink(subNode);
-                            }
-                        }
-                        subNode.updateColour();
-                    }
-                }
-            }
-        }
-
         for (Player player : players) {
             nodes.get(0).occupy(player);
             player.setCurrentNode(nodes.get(0));
             player.setPlayerNodeCirclePos(circleRadius);
+
+            // Mark the starting node as visited for all players
+            player.markVisited(nodes.get(0));
         }
 
         currentMoves = 0;
@@ -366,7 +333,7 @@ public class Main implements Screen {
             }
 
             renderer.renderBoard(nodes);
-            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode);
+            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode, attemptedTaskSelection);
 
             if (isSpaceBarHeld) {
                 float progress = Math.min(spaceBarHeldTime / requiredHoldTime, 1);
@@ -510,7 +477,15 @@ public class Main implements Screen {
         if (mousePos.x >= node.x && mousePos.x <= node.x + node.size &&
             mousePos.y >= node.y && mousePos.y <= node.y + node.size) {
 
-            if (currentNode != node && currentNode.containsCurrentPlayer(players.get(turn))) {
+            Player currentPlayer = players.get(turn);
+
+            // Prevent moving back to a visited node
+            if (currentPlayer.hasVisited(node)) {
+                Gdx.app.log("DEBUG", "Cannot move back to a visited node.");
+                return false;
+            }
+
+            if (currentNode != node && currentNode.containsCurrentPlayer(currentPlayer)) {
                 if (currentNode.links.contains(node) || node.links.contains(currentNode)) {
                     moveToNode(node);
                     Gdx.app.log("DEBUG", "Node changed");
@@ -524,25 +499,36 @@ public class Main implements Screen {
     }
 
     private void moveToNode(Node targetNode) {
+        Player currentPlayer = players.get(turn);
+
+        // Check if the target node has already been visited
+        if (currentPlayer.hasVisited(targetNode)) {
+            Gdx.app.log("DEBUG", "Cannot move back to a visited node.");
+            return; // Prevent the player from moving back
+        }
+
+        // Mark the target node as visited
+        currentPlayer.markVisited(targetNode);
+
         currentMoves++;
 
         for (Player occupant : targetNode.occupants) {
             occupant.setPlayerNodeCirclePos(circleRadius);
         }
 
-        currentNode.deOccupy(players.get(turn).getName());
-        targetNode.occupy(players.get(turn));
-        players.get(turn).setCurrentNode(targetNode);
+        currentNode.deOccupy(currentPlayer.getName());
+        targetNode.occupy(currentPlayer);
+        currentPlayer.setCurrentNode(targetNode);
         currentNode = targetNode;
 
-        players.get(turn).setPlayerNodeTarget(circleRadius);
+        currentPlayer.setPlayerNodeTarget(circleRadius);
         animatingPlayerMoving = true;
 
-        // this clears the weather alert text when the user makes a move
+        // Clear the weather alert text when the user makes a move
         weatherAlertTimer = 0;
 
         if (debugWindow) {
-            renderer.renderDebugTravelLine(players.get(turn));
+            renderer.renderDebugTravelLine(currentPlayer);
         }
     }
 
@@ -563,7 +549,10 @@ public class Main implements Screen {
 
         handleDice();
 
-        handleAttachTask();
+        // Only allow task selection if the player has no moves left
+        if (currentMoves >= maxMoves) {
+            handleAttachTask();
+        }
 
         handleOptions();
 
@@ -711,43 +700,48 @@ public class Main implements Screen {
     }
 
     private void handleAttachTask() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.S)
-            && currentNode.getTask() != null
-            && !currentNode.getTask().taskTaken()) {
+        // Only allow task selection if the player has no moves left
+        if (currentMoves >= maxMoves) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+                attemptedTaskSelection = true; // Player attempted to select a task
 
-            Player currentPlayer = players.get(turn);
-            Task task = currentNode.getTask();
+                if (currentNode.getTask() != null && !currentNode.getTask().taskTaken()) {
+                    Player currentPlayer = players.get(turn);
+                    Task task = currentNode.getTask();
 
-            if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
-                // Calculate 20% of the required resources
-                Resource requiredMoney = task.getResources().get(0); // Assuming the first resource is money
-                Resource requiredPeople = task.getResources().get(1); // Assuming the second resource is people
+                    // Check if the player can select this task
+                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
+                        // Calculate 20% of the required resources
+                        Resource requiredMoney = task.getResources().get(0); // Assuming the first resource is money
+                        Resource requiredPeople = task.getResources().get(1); // Assuming the second resource is people
 
-                int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
-                int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
+                        int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
+                        int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
 
-                // Check if the player has enough resources to pay the selecting fee
-                if (currentPlayer.hasEnoughResources(new Resource("Money", selectingFeeMoney))
-                    && currentPlayer.getRand2().getAmount() >= selectingFeePeople) {
+                        // Check if the player has enough resources to pay the selecting fee
+                        if (currentPlayer.hasEnoughResources(new Resource("Money", selectingFeeMoney))
+                            && currentPlayer.getRand2().getAmount() >= selectingFeePeople) {
 
-                    // Show the TaskSelectionScreen
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
-                        // Deduct the selecting fee and assign the task (only when confirmed)
-                        currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
-                        currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
-                        currentPlayer.addTask(task);
-                        task.setOwner(currentPlayer);
-                        task.setTaken(true); // Mark the task as selected
-                        renderer.updatePlayerTab(currentPlayer);
-                        Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
-                        Gdx.app.log("DEBUG", "Task selected but not started");
-                        renderer.setPlayerTab();
-                    }));
-                } else {
-                    Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
+                            // Show the TaskSelectionScreen
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
+                                // Deduct the selecting fee and assign the task (only when confirmed)
+                                currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
+                                currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
+                                currentPlayer.addTask(task);
+                                task.setOwner(currentPlayer);
+                                task.setTaken(true); // Mark the task as selected
+                                renderer.updatePlayerTab(currentPlayer);
+                                Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
+                                Gdx.app.log("DEBUG", "Task selected but not started");
+                                renderer.setPlayerTab();
+                            }));
+                        } else {
+                            Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
+                        }
+                    } else {
+                        Gdx.app.log("DEBUG", "Cannot select tasks from different categories.");
+                    }
                 }
-            } else {
-                Gdx.app.log("DEBUG", "Cannot select tasks from different categories.");
             }
         }
     }
@@ -778,6 +772,18 @@ public class Main implements Screen {
             }
         }
 
+        // Check if all tasks of the current category are complete
+        if (currentPlayer.isCurrentCategoryComplete()) {
+            currentPlayer.setCurrentCategory(null); // Reset the current category
+            Gdx.app.log("DEBUG", "All tasks of the current category are complete. Resetting category.");
+        }
+
+        // Reset the list of visited nodes for the current player
+        currentPlayer.resetVisitedNodes();
+
+        // Reset the task selection attempt flag
+        attemptedTaskSelection = false;
+
         if (turn + 1 < players.size()) {
             turn++;
         } else {
@@ -785,7 +791,11 @@ public class Main implements Screen {
             globalTurn++;
             currentSeason = weatherManager.getSeason(globalTurn);
         }
+
+        // Mark the starting node as visited at the beginning of the turn
         currentNode = players.get(turn).getCurrentNode();
+        players.get(turn).markVisited(currentNode); // Mark the starting node as visited
+
         currentMoves = 0;
         renderer.updatePlayerTab(players.get(turn));
         dice.resetFace();
@@ -837,6 +847,8 @@ public class Main implements Screen {
             handleDebugWindowDrag(mouseX, mouseY);
         }
     }
+
+
 
     private boolean isMouseInsideBox(float mouseX, float mouseY, float boxCenterX, float boxCenterY, float boxWidth, float boxHeight) {
         float boxLeft = boxCenterX - boxWidth / 2;
