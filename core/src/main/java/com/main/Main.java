@@ -95,6 +95,7 @@ public class Main implements Screen {
 
     // Tasks
     private ArrayList<Task> task;
+    private boolean attemptedTaskSelection = false; // Tracks if the player tried to select a task
 
     // Timer for no movement left text prevent it from being spammed
     private boolean hasClickedNM = false;
@@ -114,6 +115,8 @@ public class Main implements Screen {
     Boolean selectingNode = false;
 
     private Texture gameBackgroundTexture;
+
+
 
     public Main(List<Node> nodes) {
         this.nodes = nodes;
@@ -330,7 +333,7 @@ public class Main implements Screen {
             }
 
             renderer.renderBoard(nodes);
-            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode);
+            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode, attemptedTaskSelection);
 
             if (isSpaceBarHeld) {
                 float progress = Math.min(spaceBarHeldTime / requiredHoldTime, 1);
@@ -699,43 +702,45 @@ public class Main implements Screen {
     private void handleAttachTask() {
         // Only allow task selection if the player has no moves left
         if (currentMoves >= maxMoves) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.S)
-                && currentNode.getTask() != null
-                && !currentNode.getTask().taskTaken()) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+                attemptedTaskSelection = true; // Player attempted to select a task
 
-                Player currentPlayer = players.get(turn);
-                Task task = currentNode.getTask();
+                if (currentNode.getTask() != null && !currentNode.getTask().taskTaken()) {
+                    Player currentPlayer = players.get(turn);
+                    Task task = currentNode.getTask();
 
-                if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
-                    // Calculate 20% of the required resources
-                    Resource requiredMoney = task.getResources().get(0); // Assuming the first resource is money
-                    Resource requiredPeople = task.getResources().get(1); // Assuming the second resource is people
+                    // Check if the player can select this task
+                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
+                        // Calculate 20% of the required resources
+                        Resource requiredMoney = task.getResources().get(0); // Assuming the first resource is money
+                        Resource requiredPeople = task.getResources().get(1); // Assuming the second resource is people
 
-                    int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
-                    int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
+                        int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
+                        int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
 
-                    // Check if the player has enough resources to pay the selecting fee
-                    if (currentPlayer.hasEnoughResources(new Resource("Money", selectingFeeMoney))
-                        && currentPlayer.getRand2().getAmount() >= selectingFeePeople) {
+                        // Check if the player has enough resources to pay the selecting fee
+                        if (currentPlayer.hasEnoughResources(new Resource("Money", selectingFeeMoney))
+                            && currentPlayer.getRand2().getAmount() >= selectingFeePeople) {
 
-                        // Show the TaskSelectionScreen
-                        ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
-                            // Deduct the selecting fee and assign the task (only when confirmed)
-                            currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
-                            currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
-                            currentPlayer.addTask(task);
-                            task.setOwner(currentPlayer);
-                            task.setTaken(true); // Mark the task as selected
-                            renderer.updatePlayerTab(currentPlayer);
-                            Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
-                            Gdx.app.log("DEBUG", "Task selected but not started");
-                            renderer.setPlayerTab();
-                        }));
+                            // Show the TaskSelectionScreen
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
+                                // Deduct the selecting fee and assign the task (only when confirmed)
+                                currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
+                                currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
+                                currentPlayer.addTask(task);
+                                task.setOwner(currentPlayer);
+                                task.setTaken(true); // Mark the task as selected
+                                renderer.updatePlayerTab(currentPlayer);
+                                Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
+                                Gdx.app.log("DEBUG", "Task selected but not started");
+                                renderer.setPlayerTab();
+                            }));
+                        } else {
+                            Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
+                        }
                     } else {
-                        Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
+                        Gdx.app.log("DEBUG", "Cannot select tasks from different categories.");
                     }
-                } else {
-                    Gdx.app.log("DEBUG", "Cannot select tasks from different categories.");
                 }
             }
         }
@@ -767,8 +772,17 @@ public class Main implements Screen {
             }
         }
 
+        // Check if all tasks of the current category are complete
+        if (currentPlayer.isCurrentCategoryComplete()) {
+            currentPlayer.setCurrentCategory(null); // Reset the current category
+            Gdx.app.log("DEBUG", "All tasks of the current category are complete. Resetting category.");
+        }
+
         // Reset the list of visited nodes for the current player
         currentPlayer.resetVisitedNodes();
+
+        // Reset the task selection attempt flag
+        attemptedTaskSelection = false;
 
         if (turn + 1 < players.size()) {
             turn++;
@@ -781,9 +795,6 @@ public class Main implements Screen {
         // Mark the starting node as visited at the beginning of the turn
         currentNode = players.get(turn).getCurrentNode();
         players.get(turn).markVisited(currentNode); // Mark the starting node as visited
-
-        // Debugging: Log the starting node for the current player
-        Gdx.app.log("DEBUG", "Player " + players.get(turn).getName() + " starts at node: " + currentNode.id);
 
         currentMoves = 0;
         renderer.updatePlayerTab(players.get(turn));

@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
@@ -113,12 +114,15 @@ public class Player {
 
     public void addTask(Task task) {
         if (currentCategory == null) {
-            currentCategory = task.getCategory();
+            currentCategory = task.getCategory(); // Set the current category
+            Gdx.app.log("DEBUG", "Player " + name + " set current category to: " + currentCategory);
         } else if (!currentCategory.equals(task.getCategory())) {
+            Gdx.app.log("DEBUG", "Player " + name + " cannot select a task from a different category.");
             return; // Cannot add tasks from different categories
         }
         taskList.add(task);
         task.setSelected(true); // Mark the task as selected when added
+        Gdx.app.log("DEBUG", "Player " + name + " added task: " + task.getName() + " (Category: " + task.getCategory() + ")");
     }
 
     public boolean hasSubTasks(Task task) {
@@ -169,6 +173,23 @@ public class Player {
         }
     }
 
+    public boolean isCurrentCategoryComplete() {
+        if (currentCategory == null) {
+            Gdx.app.log("DEBUG", "Player " + name + " has no current category.");
+            return true; // No category selected, so it's "complete"
+        }
+
+        // Check if all tasks of the current category are complete
+        for (Task task : taskList) {
+            if (task.getCategory().equals(currentCategory) && !task.isCompleted()) {
+                Gdx.app.log("DEBUG", "Player " + name + " has incomplete task: " + task.getName() + " (Category: " + task.getCategory() + ")");
+                return false; // At least one task in the category is incomplete
+            }
+        }
+
+        Gdx.app.log("DEBUG", "Player " + name + " has completed all tasks in the " + currentCategory + " category.");
+        return true; // All tasks in the category are complete
+    }
 
 
 
@@ -190,5 +211,9 @@ public class Player {
 
     public String getCurrentCategory() {
         return currentCategory;
+    }
+
+    public void setCurrentCategory(String currentCategory) {
+        this.currentCategory = currentCategory;
     }
 }
