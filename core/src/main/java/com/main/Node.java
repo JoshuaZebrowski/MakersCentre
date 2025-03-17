@@ -32,6 +32,26 @@ public class Node {
         this.task = null;
     }
 
+    public boolean shouldHighlight(Player currentPlayer) {
+        return task != null && currentPlayer.getTasks().contains(task);
+    }
+
+    public boolean isTaskSelectedByAnyPlayer(List<Player> players) {
+        if (task == null) {
+            return false;
+        }
+        for (Player player : players) {
+            if (player.getTasks().contains(task)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTaskSelectedByCurrentPlayer(Player currentPlayer) {
+        return task != null && currentPlayer.getTasks().contains(task);
+    }
+
     public void setIsJobCentre(boolean isJobCentre) {
         this.isJobCentre = isJobCentre;
     }

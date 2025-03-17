@@ -17,19 +17,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class TaskSelectionScreen implements Screen {
+public class NoEligiblePlayersScreen implements Screen {
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture backgroundTexture; // Background texture
-    private Runnable onConfirm; // Callback for confirmation
     private Main main; // Reference to the main game screen
-    private Task task; // The task to be confirmed
 
-    public TaskSelectionScreen(Main main, Task task, Runnable onConfirm) {
+    public NoEligiblePlayersScreen(Main main) {
         this.main = main;
-        this.task = task;
-        this.onConfirm = onConfirm;
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
@@ -46,38 +42,17 @@ public class TaskSelectionScreen implements Screen {
         mainTable.center();
 
         // Add a title label at the top
-        Label titleLabel = new Label("Task Selection", new Label.LabelStyle(font, Color.YELLOW));
+        Label titleLabel = new Label("No Eligible Players", new Label.LabelStyle(font, Color.RED));
         titleLabel.setFontScale(4f);
         titleLabel.setAlignment(Align.center);
         mainTable.add(titleLabel).colspan(2).center().padBottom(20).row();
 
-        // Add the task name (yellow)
-        Label taskNameLabel = new Label(task.getName(), new Label.LabelStyle(font, Color.YELLOW));
-        taskNameLabel.setAlignment(Align.left);
-        taskNameLabel.setWrap(false); // Disable wrapping for the title
-        mainTable.add(taskNameLabel).left().width(400).row(); // Set a fixed width for the title
+        // Add a message
+        Label messageLabel = new Label("There are no players eligible to take this task.", new Label.LabelStyle(font, Color.WHITE));
+        messageLabel.setAlignment(Align.center);
+        mainTable.add(messageLabel).colspan(2).center().padBottom(20).row();
 
-        // Add the task description (white)
-        String description = task.getDescription()
-            .replace("{m}", task.getResourceAmount("Money"))
-            .replace("{p}", task.getResourceAmount("People"));
-        Label descriptionLabel = new Label(description, new Label.LabelStyle(font, Color.WHITE));
-        descriptionLabel.setAlignment(Align.left);
-        descriptionLabel.setWrap(true); // Enable wrapping for the description
-        mainTable.add(descriptionLabel).left().width(400).row(); // Set a fixed width for the description
-
-        // Add Confirm and Cancel buttons
-        TextButton confirmButton = new TextButton("Confirm", new TextButton.TextButtonStyle(null, null, null, font));
-        confirmButton.getLabel().setFontScale(2f);
-        confirmButton.setColor(Color.GREEN);
-        confirmButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                onConfirm.run(); // Run the confirmation logic
-                main.resumeGame(); // Return to the main game screen
-            }
-        });
-
+        // Add a cancel button
         TextButton cancelButton = new TextButton("Cancel", new TextButton.TextButtonStyle(null, null, null, font));
         cancelButton.getLabel().setFontScale(2f);
         cancelButton.setColor(Color.RED);
@@ -88,7 +63,6 @@ public class TaskSelectionScreen implements Screen {
             }
         });
 
-        mainTable.add(confirmButton).pad(20).width(200).height(60);
         mainTable.add(cancelButton).pad(20).width(200).height(60);
 
         // Add the main table to the stage

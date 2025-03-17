@@ -12,6 +12,7 @@ public class Player {
     Color color;
     Node currentNode;
     List<Task> taskList;
+    List<Task> pendingTasks;
     String currentCategory;
 
     float playerCircleX, playerCircleY;
@@ -32,6 +33,7 @@ public class Player {
         this.color = color;
         this.currentNode = null;
         this.taskList = new ArrayList<>();
+        this.pendingTasks = new ArrayList<>();
         this.currentCategory = null;
 
         this.rand = new Resource("Money", 2000000);
@@ -114,15 +116,10 @@ public class Player {
 
     public void addTask(Task task) {
         if (currentCategory == null) {
-            currentCategory = task.getCategory(); // Set the current category
-            Gdx.app.log("DEBUG", "Player " + name + " set current category to: " + currentCategory);
-        } else if (!currentCategory.equals(task.getCategory())) {
-            Gdx.app.log("DEBUG", "Player " + name + " cannot select a task from a different category.");
-            return; // Cannot add tasks from different categories
+            currentCategory = task.getCategory(); // Set the current category if not already set
         }
         taskList.add(task);
-        task.setSelected(true); // Mark the task as selected when added
-        Gdx.app.log("DEBUG", "Player " + name + " added task: " + task.getName() + " (Category: " + task.getCategory() + ")");
+        task.setSelected(true); // Mark the task as selected
     }
 
     public boolean hasSubTasks(Task task) {
@@ -189,6 +186,18 @@ public class Player {
 
         Gdx.app.log("DEBUG", "Player " + name + " has completed all tasks in the " + currentCategory + " category.");
         return true; // All tasks in the category are complete
+    }
+
+    public List<Task> getPendingTasks() {
+        return pendingTasks;
+    }
+
+    public void addPendingTask(Task task) {
+        pendingTasks.add(task);
+    }
+
+    public void removePendingTask(Task task) {
+        pendingTasks.remove(task);
     }
 
 

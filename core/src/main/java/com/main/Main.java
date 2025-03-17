@@ -16,9 +16,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.main.Tooltip;
+import com.main.player.playerTab;
 import com.main.tooltips.*;
 import com.main.weatherSystem.WeatherManager;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -116,6 +116,12 @@ public class Main implements Screen {
 
     private Texture gameBackgroundTexture;
 
+    // playertab
+    private playerTab tab;
+
+    // to make sure the player doesn't try to end their turn before using all their moves
+    private boolean hasMoved = false;
+    private boolean attemptedPrematureTurnEnd = false;
 
 
     public Main(List<Node> nodes) {
@@ -123,7 +129,6 @@ public class Main implements Screen {
         players = PlayerManager.getInstance().getPlayers();
         initializeGame();
         SoundManager.getInstance().loadMusic("background", "audio/backgroundMusic.mp3");
-        //SoundManager.getInstance().playMusic("background", true);
 
         seasons = new ArrayList<>();
         seasons.add("Spring");
@@ -133,6 +138,9 @@ public class Main implements Screen {
 
         currentSeason = seasons.get(0);
         this.weatherManager = new WeatherManager();
+
+        // Initialize the playerTab
+        tab = new playerTab(players.get(0)); // Pass the first player (or current player)
     }
 
     public Player getCurrentPlayer() {
@@ -281,6 +289,11 @@ public class Main implements Screen {
         return null;
     }
 
+    public boolean isNodeSelectedByCurrentPlayer(Node node) {
+        Player currentPlayer = players.get(turn);
+        return node.getTask() != null && currentPlayer.getTasks().contains(node.getTask());
+    }
+
     public Node getLinkedNode(Node currentNode) {
         for (Node node : nodes) {
             if (node.links.contains(currentNode)) {
@@ -294,10 +307,7 @@ public class Main implements Screen {
     public void render(float delta) {
         handleInput();
 
-
         if (!isWeatherInfoScreenVisible) {
-
-
             Tooltip.getInstance().clear();
             TutorialManager.getInstance().update();
             renderer.camera.update();
@@ -321,7 +331,6 @@ public class Main implements Screen {
 
                 updatePlayerAnimation();
 
-
                 if (hasClickedNM) {
                     timeLastNM -= delta;
                     if (timeLastNM >= 0) {
@@ -333,7 +342,7 @@ public class Main implements Screen {
             }
 
             renderer.renderBoard(nodes);
-            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode, attemptedTaskSelection);
+            renderer.renderUI(turn, maxMoves, currentMoves, currentWeather, currentSeason, currentNode, attemptedTaskSelection, hasMoved, attemptedPrematureTurnEnd);
 
             if (isSpaceBarHeld) {
                 float progress = Math.min(spaceBarHeldTime / requiredHoldTime, 1);
@@ -369,6 +378,11 @@ public class Main implements Screen {
                 renderer.renderWeatherAlert(weatherAlertText);
             }
 
+            // Handle 't' key press to open the PlayerTabScreen
+            if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+                Player currentPlayer = players.get(turn);
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayerTabScreen(this, currentPlayer));
+            }
 
         } else {
             weatherInfoScreen.render(delta);
@@ -511,6 +525,7 @@ public class Main implements Screen {
         currentPlayer.markVisited(targetNode);
 
         currentMoves++;
+        hasMoved = true; // Player has moved during their turn
 
         for (Player occupant : targetNode.occupants) {
             occupant.setPlayerNodeCirclePos(circleRadius);
@@ -531,6 +546,8 @@ public class Main implements Screen {
             renderer.renderDebugTravelLine(currentPlayer);
         }
     }
+
+
 
     private void handleInput() {
         handleSpaceBarInput();
@@ -557,6 +574,8 @@ public class Main implements Screen {
         handleOptions();
 
         handleMakersCenter();
+
+        handleTaskRequest(); // Handle task requests
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             isWeatherInfoScreenVisible = !isWeatherInfoScreenVisible;
@@ -608,6 +627,23 @@ public class Main implements Screen {
 
             ((Game) Gdx.app.getApplicationListener()).setScreen(makersCenter);
         }
+    }
+
+    public boolean isTaskSelectedByCurrentPlayer(Node node) {
+        Player currentPlayer = players.get(turn);
+        return node.getTask() != null && currentPlayer.getTasks().contains(node.getTask());
+    }
+
+    public boolean isTaskSelectedByAnyPlayer(Node node) {
+        if (node.getTask() == null) {
+            return false;
+        }
+        for (Player player : players) {
+            if (player.getTasks().contains(node.getTask())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleBridge() {
@@ -699,6 +735,45 @@ public class Main implements Screen {
         }
     }
 
+
+
+
+
+    private void handleTaskRequest() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            Player currentPlayer = players.get(turn);
+            Task task = currentNode.getTask();
+
+            if (task != null && !task.taskTaken()) {
+                // Check if the current player can select the task
+                if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
+                    // The current player can select the task, so no need to send a request
+                    Gdx.app.log("DEBUG", "You can select this task yourself.");
+                    return;
+                }
+
+                // Find eligible players
+                List<Player> eligiblePlayers = new ArrayList<>();
+                for (Player player : players) {
+                    if (player != currentPlayer && (player.getCurrentCategory() == null || player.getCurrentCategory().equals(task.getCategory()))) {
+                        eligiblePlayers.add(player);
+                    }
+                }
+
+                if (eligiblePlayers.isEmpty()) {
+                    // No eligible players, show the "No Eligible Players" screen
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new NoEligiblePlayersScreen(this));
+                } else {
+                    // Show the PlayerRequestScreen with eligible players
+                    ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayerRequestScreen(this, task, eligiblePlayers));
+                }
+            }
+        }
+    }
+
+
+
+
     private void handleAttachTask() {
         // Only allow task selection if the player has no moves left
         if (currentMoves >= maxMoves) {
@@ -734,6 +809,9 @@ public class Main implements Screen {
                                 Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
                                 Gdx.app.log("DEBUG", "Task selected but not started");
                                 renderer.setPlayerTab();
+
+                                // Refresh the playerTab to reflect the new task
+                                tab.playerTarget(currentPlayer);
                             }));
                         } else {
                             Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
@@ -784,6 +862,9 @@ public class Main implements Screen {
         // Reset the task selection attempt flag
         attemptedTaskSelection = false;
 
+        // Reset the premature turn end attempt flag
+        attemptedPrematureTurnEnd = false;
+
         if (turn + 1 < players.size()) {
             turn++;
         } else {
@@ -797,6 +878,7 @@ public class Main implements Screen {
         players.get(turn).markVisited(currentNode); // Mark the starting node as visited
 
         currentMoves = 0;
+        hasMoved = false; // Reset the movement flag at the start of the new turn
         renderer.updatePlayerTab(players.get(turn));
         dice.resetFace();
         dice.setAlreadyRolled(false);
@@ -809,21 +891,88 @@ public class Main implements Screen {
 
         spaceBarHeldTime = 0;
         isSpaceBarHeld = false;
+
+        // Update the playerTab to reflect the current player's tasks
+        tab.playerTarget(players.get(turn));
+
+        // Handle pending tasks at the beginning of the turn
+        handlePendingTasks();
     }
+
+
+
+
+    private void handlePendingTasks() {
+        Player currentPlayer = players.get(turn);
+        List<Task> pendingTasks = currentPlayer.getPendingTasks();
+
+        if (!pendingTasks.isEmpty()) {
+            // Show the TaskSelectionScreen for the first pending task
+            Task pendingTask = pendingTasks.get(0);
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, pendingTask, () -> {
+                // If the player confirms, add the task to their task list and deduct the fee
+                currentPlayer.addTask(pendingTask);
+                pendingTask.setOwner(currentPlayer);
+                pendingTask.setTaken(true); // Mark the task as selected
+                currentPlayer.removePendingTask(pendingTask); // Remove the task from pending tasks
+
+                // Deduct the selecting fee
+                Resource requiredMoney = pendingTask.getResources().get(0); // Assuming the first resource is money
+                Resource requiredPeople = pendingTask.getResources().get(1); // Assuming the second resource is people
+
+                int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
+                int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
+
+                currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
+                currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
+
+                renderer.updatePlayerTab(currentPlayer);
+                Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
+                Gdx.app.log("DEBUG", "Task selected but not started");
+
+                // Return to the main game screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(this);
+            }));
+        }
+    }
+
+
+
 
     private void handleSpaceBarInput() {
         if (input.isKeyPressed(Input.Keys.SPACE)) {
-            isSpaceBarHeld = true;
-            spaceBarHeldTime += Gdx.graphics.getDeltaTime();
+            // Check if the player is at a dead end (no available moves)
+            boolean isDeadEnd = true;
+            for (Node linkedNode : currentNode.links) {
+                if (!players.get(turn).hasVisited(linkedNode)) {
+                    isDeadEnd = false;
+                    break;
+                }
+            }
 
-            if (spaceBarHeldTime >= requiredHoldTime) {
-                endTurn();
+            // Allow ending the turn if the player hasn't moved, has used all moves, or is at a dead end
+            if (!hasMoved || currentMoves >= maxMoves || isDeadEnd) {
+                isSpaceBarHeld = true;
+                spaceBarHeldTime += Gdx.graphics.getDeltaTime();
+
+                if (spaceBarHeldTime >= requiredHoldTime) {
+                    endTurn();
+                }
+            } else {
+                // Player tried to end their turn prematurely
+                attemptedPrematureTurnEnd = true;
+                Gdx.app.log("DEBUG", "You must use all your moves before ending your turn.");
             }
         } else {
             spaceBarHeldTime = 0;
             isSpaceBarHeld = false;
+            attemptedPrematureTurnEnd = false; // Reset the flag when spacebar is released
         }
     }
+
+
+
+
 
     private void handleCameraZoom() {
         if (input.isKeyPressed(Input.Keys.UP)) {
@@ -931,5 +1080,26 @@ public class Main implements Screen {
         gameBackgroundTexture.dispose();
         shapeRenderer.dispose();
         gameBackgroundTexture.dispose();
+    }
+
+    public String getCurrentPlayerObjective() {
+        Player currentPlayer = players.get(turn);
+        return currentPlayer.getCurrentCategory(); // Returns "Financial", "Educational", or "Business"
+    }
+
+    public Color getColorForObjective(String objective) {
+        if (objective == null) {
+            return Color.WHITE; // Default color if no objective is set
+        }
+        switch (objective) {
+            case "Financial":
+                return Color.RED;
+            case "Educational":
+                return Color.GREEN;
+            case "Business":
+                return Color.BLUE;
+            default:
+                return Color.WHITE; // Default color for unknown objectives
+        }
     }
 }
