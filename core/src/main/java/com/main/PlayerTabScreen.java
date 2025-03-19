@@ -83,8 +83,8 @@ public class PlayerTabScreen implements Screen {
 
                 // Add the task description (white)
                 String description = task.getDescription()
-                    .replace("{m}", task.getResourceAmount("Money"))
-                    .replace("{p}", task.getResourceAmount("People"));
+                    .replace("{m}", task.getResourceAmountString("Money"))
+                    .replace("{p}", task.getResourceAmountString("People"));
                 Label descriptionLabel = new Label(description, new Label.LabelStyle(font, Color.WHITE));
                 descriptionLabel.setAlignment(Align.left);
                 descriptionLabel.setWrap(true); // Enable wrapping for the description

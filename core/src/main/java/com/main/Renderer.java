@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.main.Tooltip;
 
 import java.util.List;
 
@@ -123,8 +122,14 @@ public class Renderer {
             float bottomX = node.x + 10, bottomY = node.y + 10 - halfHeight;
             float leftX = node.x + 10 - halfWidth, leftY = node.y + 10;
 
-            // Use the node's original color
-            shapeRenderer.setColor(node.color);
+            // If the task is completed, set the node color to yellow
+            if (node.getTask() != null && node.getTask().isCompleted()) {
+                shapeRenderer.setColor(Color.YELLOW);
+            } else {
+                // Otherwise, use the node's original color
+                shapeRenderer.setColor(node.color);
+            }
+
 
             // Draw the node
             shapeRenderer.triangle(topX, topY, rightX, rightY, bottomX, bottomY);
@@ -133,11 +138,11 @@ public class Renderer {
             // Check if the node's task is selected by the current player
             boolean isTaskSelectedByCurrentPlayer = _main.isTaskSelectedByCurrentPlayer(node);
 
-            // Draw a yellow border if the task is selected by the current player
+            // Draw a white border if the task is selected by the current player
             if (isTaskSelectedByCurrentPlayer) {
                 shapeRenderer.end(); // End the filled shape rendering
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Switch to line rendering
-                shapeRenderer.setColor(Color.YELLOW); // Set border color to yellow
+                shapeRenderer.setColor(Color.WHITE); // Set border color to white
 
                 // Draw the border around the node
                 shapeRenderer.triangle(topX, topY, rightX, rightY, bottomX, bottomY);
@@ -262,8 +267,12 @@ public class Renderer {
 
         // Draw current player information
         font.setColor(players.get(turn).getColor());
-        int iPN = players.get(turn).getName().indexOf('#');
-        String turnText = "Turn : " + players.get(turn).getName().substring(0, iPN);
+        String playerName = players.get(turn).getName();
+        int hashIndex = playerName.indexOf('#');
+        if (hashIndex != -1) {
+            playerName = playerName.substring(0, hashIndex);
+        }
+        String turnText = "Turn : " + playerName;
 
         // Draw money (rand) and people (rand2) resources
         String resourceRand = players.get(turn).getRand().getType() + " : " + players.get(turn).getRand().getAmount() + " ZAR";
@@ -283,6 +292,18 @@ public class Renderer {
         // Draw people (rand2) below money
         font.draw(batch, resourcePeople, 40, viewport.getWorldHeight() - 150);
 
+        // Draw task progress information
+        int turnsLeft = players.get(turn).getTurnsLeftForTask();
+        if (turnsLeft >= 0) {
+            String taskProgressText = "Turns left for task: " + turnsLeft;
+            font.draw(batch, taskProgressText, 10, viewport.getWorldHeight() - 180);
+        } else {
+            String taskProgressText = "No active task.";
+            font.draw(batch, taskProgressText, 10, viewport.getWorldHeight() - 180);
+        }
+
+
+
         // Draw the "Press 'T' to open player tab" text in the top-right corner
         font.setColor(Color.WHITE);
         String playerTabText = "Press 'T' to open player tab";
@@ -291,51 +312,129 @@ public class Renderer {
         float playerTabY = Gdx.graphics.getHeight() - 50; // Top of the screen with padding
         font.draw(batch, playerTabText, playerTabX, playerTabY);
 
+        // Check if the objective is already claimed by another player
+        boolean isObjectiveClaimed = false;
+        if (currentNode.getTask() != null) {
+            String taskCategory = currentNode.getTask().getCategory();
+            isObjectiveClaimed = _main.getObjectiveOwners().containsKey(taskCategory) &&
+                _main.getObjectiveOwners().get(taskCategory) != players.get(turn);
+        }
+
+        Player currentPlayer = players.get(turn);
+
         // Only show task selection prompts if the player has no moves left
         if (currentMoves >= maxMoves) {
-            // If the task is available to select (not taken and not selected)
-            if (currentNode.getTask() != null && !currentNode.getTask().taskTaken() && !currentNode.getTask().isSelected()) {
-                Player currentPlayer = players.get(turn);
+            // If the objective hasn't started
+            if (!currentPlayer.isObjectiveStarted()) {
+                // If the task is available to select (not taken and not selected)
+                if (currentNode.getTask() != null && !currentNode.getTask().taskTaken() && !currentNode.getTask().isSelected()) {
+                    // Display the appropriate message based on whether the player attempted to select a task
+                    if (attemptedTaskSelection) {
+                        if (currentNode.getTask().isChanceSquare()) {
+                            if (!currentNode.getTask().hasBeenOpened()){
+                                font.setColor(Color.WHITE);
+                                font.getData().setScale(2f); // Larger font size for better visibility
+                                String taskMessage = "This is a chance square, press 's' to open.";
+                                GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                                float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
+                                float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
+                                font.draw(batch, taskMessage, taskX, taskY);
+                            }
+                            else {
+                                font.setColor(Color.RED);
+                                font.getData().setScale(2f); // Larger font size for better visibility
+                                String taskMessage = "This chance square has already been opened.";
+                                GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                                float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
+                                float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
+                                font.draw(batch, taskMessage, taskX, taskY);
+                            }
+                        } else if (!isObjectiveClaimed && (currentPlayer.getCurrentCategory() == null ||
+                            currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory()))) {
+                            font.setColor(Color.WHITE);
+                            font.getData().setScale(2f); // Larger font size for better visibility
+                            String taskMessage = "Task Available to Select. Press 's' to Select Task.";
+                            GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                            float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
+                            float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
+                            font.draw(batch, taskMessage, taskX, taskY);
+                        } else if (isObjectiveClaimed || (currentPlayer.getCurrentCategory() != null && !currentNode.getTask().getCategory().equals(currentPlayer.getCurrentCategory()))) {
+                            font.setColor(Color.RED);
+                            font.getData().setScale(2f); // Larger font size for better visibility
+                            String categoryMessage = "You cannot select tasks from other people's categories.";
+                            GlyphLayout categoryLayout = new GlyphLayout(font, categoryMessage);
+                            float categoryX = Gdx.graphics.getWidth() - categoryLayout.width - 20; // Right side of the screen with padding
+                            float categoryY = playerTabY - categoryLayout.height - 50; // Positioned lower to avoid overlap
+                            font.draw(batch, categoryMessage, categoryX, categoryY);
+                        }
+                    } else {
+                        // Only display the initial message if the task is in the same category
+                        if (currentNode.getTask().isChanceSquare()) {
+                            if (!currentNode.getTask().hasBeenOpened()){
+                                font.setColor(Color.WHITE);
+                                font.getData().setScale(2f); // Larger font size for better visibility
+                                String taskMessage = "This is a chance square, press 's' to open.";
+                                GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                                float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
+                                float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
+                                font.draw(batch, taskMessage, taskX, taskY);
+                            }
 
-                // Display the appropriate message based on whether the player attempted to select a task
-                if (attemptedTaskSelection) {
-                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory())) {
-                        font.setColor(Color.WHITE);
-                        font.getData().setScale(2f); // Larger font size for better visibility
-                        String taskMessage = "Task Available to Select. Press 's' to Select Task.";
-                        GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
-                        float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
-                        float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
-                        font.draw(batch, taskMessage, taskX, taskY);
-                    } else {
-                        font.setColor(Color.RED);
-                        font.getData().setScale(2f); // Larger font size for better visibility
-                        String categoryMessage = "You can only select " + currentPlayer.getCurrentCategory() + " tasks.";
-                        GlyphLayout categoryLayout = new GlyphLayout(font, categoryMessage);
-                        float categoryX = Gdx.graphics.getWidth() - categoryLayout.width - 20; // Right side of the screen with padding
-                        float categoryY = playerTabY - categoryLayout.height - 50; // Positioned lower to avoid overlap
-                        font.draw(batch, categoryMessage, categoryX, categoryY);
+                        } else if (!isObjectiveClaimed && (currentPlayer.getCurrentCategory() == null ||
+                            currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory()))) {
+                            font.setColor(Color.WHITE);
+                            font.getData().setScale(2f); // Larger font size for better visibility
+                            String taskMessage = "Task Available. Press 's' to Select Task.";
+                            GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                            float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
+                            float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
+                            font.draw(batch, taskMessage, taskX, taskY);
+                        } else if (isObjectiveClaimed) {
+                            // Display the message to give the task to another player
+                            font.setColor(Color.WHITE);
+                            font.getData().setScale(2f); // Larger font size for better visibility
+                            String giveTaskMessage = "The task is of a different objective.\nPress 'g' to give the task to another player.";
+                            GlyphLayout giveTaskLayout = new GlyphLayout(font, giveTaskMessage);
+                            float giveTaskX = Gdx.graphics.getWidth() - giveTaskLayout.width - 20; // Right side of the screen with padding
+                            float giveTaskY = playerTabY - giveTaskLayout.height - 50; // Positioned lower to avoid overlap
+                            font.draw(batch, giveTaskMessage, giveTaskX, giveTaskY);
+                        }
                     }
-                } else {
-                    // Only display the initial message if the task is in the same category
-                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory())) {
-                        font.setColor(Color.WHITE);
-                        font.getData().setScale(2f); // Larger font size for better visibility
-                        String taskMessage = "Task Available. Press 's' to Select Task.";
-                        GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
-                        float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
-                        float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
-                        font.draw(batch, taskMessage, taskX, taskY);
-                    } else {
-                        // Display the message to give the task to another player
-                        font.setColor(Color.WHITE);
-                        font.getData().setScale(2f); // Larger font size for better visibility
-                        String giveTaskMessage = "The task is of a different objective.\nPress 'g' to give the task to another player.";
-                        GlyphLayout giveTaskLayout = new GlyphLayout(font, giveTaskMessage);
-                        float giveTaskX = Gdx.graphics.getWidth() - giveTaskLayout.width - 20; // Right side of the screen with padding
-                        float giveTaskY = playerTabY - giveTaskLayout.height - 50; // Positioned lower to avoid overlap
-                        font.draw(batch, giveTaskMessage, giveTaskX, giveTaskY);
-                    }
+                }
+            }
+
+            else if (currentNode.getTask() != null){
+                // Execution Phase: Show task starting prompts
+                if (currentNode.getTask().taskTaken() &&
+                    currentNode.getTask().isSelected() && !currentNode.getTask().isActive() && !currentNode.getTask().isCompleted()
+                && !currentPlayer.hasActiveTask()) {
+                    font.setColor(Color.WHITE);
+                    font.getData().setScale(2f);
+                    String taskMessage = "Task Available to Start. Press 's' to Start Task.";
+                    GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                    float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20;
+                    float taskY = playerTabY - taskLayout.height - 50;
+                    font.draw(batch, taskMessage, taskX, taskY);
+                }
+                else if (currentNode.getTask().isActive()){
+
+                    font.setColor(Color.WHITE);
+                    font.getData().setScale(2f);
+                    String taskMessage = "Task Is Active";
+                    GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                    float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20;
+                    float taskY = playerTabY - taskLayout.height - 50;
+                    font.draw(batch, taskMessage, taskX, taskY);
+                }
+                else if (currentNode.getTask().isCompleted()){
+
+                    font.setColor(Color.WHITE);
+                    font.getData().setScale(2f);
+                    String taskMessage = "Task Completed";
+                    GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
+                    float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20;
+                    float taskY = playerTabY - taskLayout.height - 50;
+                    font.draw(batch, taskMessage, taskX, taskY);
                 }
             }
         }
@@ -360,7 +459,6 @@ public class Renderer {
             drawPlayerPop();
         }
     }
-
     public void renderToolTips() {
         com.main.Tooltip.getInstance().render(uiCamera, viewport.getWorldWidth(), viewport.getWorldHeight());
     }
@@ -540,29 +638,36 @@ public class Renderer {
 
         Array<String> lines = new Array<>();
         if (node.task != null) {
-            lines.add(node.task.getName());
-            lines.add("Category: " + node.task.getCategory());
-            String description = node.task.getDescription()
-                .replace("{m}", node.task.getResourceAmount("Money"))
-                .replace("{p}", node.task.getResourceAmount("People"));
+            if (node.task.isChanceSquare()){
+                lines.add(node.task.getName());
+            }
+            else {
+                lines.add(node.task.getName());
+                lines.add("Category: " + node.task.getCategory());
+                String description = node.task.getDescription()
+                    .replace("{m}", node.task.getResourceAmountString("Money"))
+                    .replace("{p}", node.task.getResourceAmountString("People"));
 
-            String[] words = description.split(" ");
-            StringBuilder currentLine = new StringBuilder();
+                String[] words = description.split(" ");
+                StringBuilder currentLine = new StringBuilder();
 
-            for (String word : words) {
-                if (currentLine.length() + word.length() + 1 > 50) {
-                    lines.add(currentLine.toString().trim());
-                    currentLine = new StringBuilder();
+                for (String word : words) {
+                    if (currentLine.length() + word.length() + 1 > 50) {
+                        lines.add(currentLine.toString().trim());
+                        currentLine = new StringBuilder();
+                    }
+                    currentLine.append(word).append(" ");
                 }
-                currentLine.append(word).append(" ");
+
+                if (currentLine.length() > 0) {
+                    lines.add(currentLine.toString().trim());
+                }
             }
 
-            if (currentLine.length() > 0) {
-                lines.add(currentLine.toString().trim());
-            }
         } else if (node.isJobCentre) {
             lines.add("Makers Centre");
         }
+
 
         float maxTextWidth = 0f;
         for (String line : lines) {

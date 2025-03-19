@@ -17,19 +17,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class TaskSelectionScreen implements Screen {
+public class StartObjectiveScreen implements Screen {
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture backgroundTexture; // Background texture
     private Runnable onConfirm; // Callback for confirmation
     private Main main; // Reference to the main game screen
-    private Task task; // The task to be confirmed
+    private String objectiveCategory; // The objective category
 
 
-    public TaskSelectionScreen(Main main, Task task, Runnable onConfirm) {
+    public StartObjectiveScreen(Main main, String objectiveCategory, Runnable onConfirm) {
         this.main = main;
-        this.task = task;
+        this.objectiveCategory = objectiveCategory;
         this.onConfirm = onConfirm;
 
         stage = new Stage(new ScreenViewport());
@@ -47,50 +47,36 @@ public class TaskSelectionScreen implements Screen {
         mainTable.center();
 
         // Add a title label at the top
-        Label titleLabel = new Label("Task Selection", new Label.LabelStyle(font, Color.YELLOW));
+        Label titleLabel = new Label("Objective Ready", new Label.LabelStyle(font, Color.YELLOW));
         titleLabel.setFontScale(4f);
         titleLabel.setAlignment(Align.center);
         mainTable.add(titleLabel).colspan(2).center().padBottom(20).row();
 
-        // Add the task name (yellow)
-        Label taskNameLabel = new Label(task.getName(), new Label.LabelStyle(font, Color.YELLOW));
-        taskNameLabel.setAlignment(Align.left);
-        taskNameLabel.setWrap(false); // Disable wrapping for the title
-        mainTable.add(taskNameLabel).left().width(400).row(); // Set a fixed width for the title
+        // Add the objective message
+        String message = "Congratulations on selecting all the tasks for the " + objectiveCategory + " objective.\nYou may now start its tasks.";
+        Label messageLabel = new Label(message, new Label.LabelStyle(font, Color.WHITE));
+        messageLabel.setAlignment(Align.center);
+        messageLabel.setWrap(true); // Enable wrapping for the message
+        mainTable.add(messageLabel).colspan(2).center().width(600).padBottom(20).row();
 
-        // Add the task description (white)
-        String description = task.getDescription()
-            .replace("{m}", task.getResourceAmountString("Money"))
-            .replace("{p}", task.getResourceAmountString("People"));
-        Label descriptionLabel = new Label(description, new Label.LabelStyle(font, Color.WHITE));
-        descriptionLabel.setAlignment(Align.left);
-        descriptionLabel.setWrap(true); // Enable wrapping for the description
-        mainTable.add(descriptionLabel).left().width(400).row(); // Set a fixed width for the description
-
-        // Add Confirm and Cancel buttons
+        // Add a confirm button
         TextButton confirmButton = new TextButton("Confirm", new TextButton.TextButtonStyle(null, null, null, font));
         confirmButton.getLabel().setFontScale(2f);
         confirmButton.setColor(Color.GREEN);
         confirmButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                // Set the objectiveStarted flag to true for the current player
+                Player currentPlayer = main.getCurrentPlayer();
+                currentPlayer.setObjectiveStarted(true);
+
                 onConfirm.run(); // Run the confirmation logic
                 main.resumeGame(); // Return to the main game screen
             }
         });
 
-        TextButton cancelButton = new TextButton("Cancel", new TextButton.TextButtonStyle(null, null, null, font));
-        cancelButton.getLabel().setFontScale(2f);
-        cancelButton.setColor(Color.RED);
-        cancelButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                main.resumeGame(); // Return to the main game screen
-            }
-        });
-
+        // Add the confirm button to the UI
         mainTable.add(confirmButton).pad(20).width(200).height(60);
-        mainTable.add(cancelButton).pad(20).width(200).height(60);
 
         // Add the main table to the stage
         stage.addActor(mainTable);

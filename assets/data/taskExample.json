@@ -8,8 +8,9 @@
     ],
     "steps": [],
     "time": 3,
-    "isSubTask": false,
-    "category": "Educational"
+
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Train Teachers",
@@ -20,8 +21,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Provide Scholarships",
@@ -32,8 +33,8 @@
     ],
     "steps": [],
     "time": 1,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Library",
@@ -44,8 +45,8 @@
     ],
     "steps": [],
     "time": 4,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Develop Online Learning Platform",
@@ -56,8 +57,8 @@
     ],
     "steps": [],
     "time": 5,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Provide School Supplies",
@@ -68,8 +69,8 @@
     ],
     "steps": [],
     "time": 1,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Upgrade School Facilities",
@@ -80,8 +81,8 @@
     ],
     "steps": [],
     "time": 6,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Organize Science Fair",
@@ -92,8 +93,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Provide After-School Programs",
@@ -104,8 +105,8 @@
     ],
     "steps": [],
     "time": 3,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Community Center",
@@ -116,8 +117,8 @@
     ],
     "steps": [],
     "time": 7,
-    "isSubTask": false,
-    "category": "Educational"
+    "category": "Educational",
+    "isChanceSquare": false
   },
   {
     "name": "Start a Microfinance Program",
@@ -128,8 +129,8 @@
     ],
     "steps": [],
     "time": 5,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Bank",
@@ -140,8 +141,8 @@
     ],
     "steps": [],
     "time": 6,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Provide Financial Literacy Training",
@@ -152,8 +153,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Invest in Local Businesses",
@@ -164,8 +165,8 @@
     ],
     "steps": [],
     "time": 4,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Create a Savings Program",
@@ -176,8 +177,8 @@
     ],
     "steps": [],
     "time": 3,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Stock Exchange",
@@ -188,8 +189,8 @@
     ],
     "steps": [],
     "time": 8,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Provide Insurance Services",
@@ -200,8 +201,8 @@
     ],
     "steps": [],
     "time": 4,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Develop a Budgeting App",
@@ -212,8 +213,8 @@
     ],
     "steps": [],
     "time": 5,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Host Financial Workshops",
@@ -224,8 +225,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Credit Union",
@@ -236,8 +237,8 @@
     ],
     "steps": [],
     "time": 6,
-    "isSubTask": false,
-    "category": "Financial"
+    "category": "Financial",
+    "isChanceSquare": false
   },
   {
     "name": "Start a Local Business",
@@ -248,8 +249,8 @@
     ],
     "steps": [],
     "time": 4,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Factory",
@@ -260,8 +261,8 @@
     ],
     "steps": [],
     "time": 8,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Open a Retail Store",
@@ -272,8 +273,8 @@
     ],
     "steps": [],
     "time": 3,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Develop a Marketing Campaign",
@@ -284,8 +285,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Warehouse",
@@ -296,8 +297,8 @@
     ],
     "steps": [],
     "time": 6,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Provide Business Training",
@@ -308,8 +309,8 @@
     ],
     "steps": [],
     "time": 2,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Start a Delivery Service",
@@ -320,8 +321,8 @@
     ],
     "steps": [],
     "time": 4,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Build a Tech Hub",
@@ -332,8 +333,8 @@
     ],
     "steps": [],
     "time": 7,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Organize a Trade Fair",
@@ -344,8 +345,8 @@
     ],
     "steps": [],
     "time": 3,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
   },
   {
     "name": "Start a Tourism Business",
@@ -356,7 +357,188 @@
     ],
     "steps": [],
     "time": 5,
-    "isSubTask": false,
-    "category": "Business"
+    "category": "Business",
+    "isChanceSquare": false
+  },
+    {
+      "name": "Build a Community Park",
+      "description": "Construct a park to provide a recreational space for the community. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 300000 },
+        { "type": "People", "amount": 8 }
+      ],
+      "steps": [],
+      "time": 4,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Organize a Community Festival",
+      "description": "Host a festival to celebrate local culture and bring people together. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 150000 },
+        { "type": "People", "amount": 5 }
+      ],
+      "steps": [],
+      "time": 2,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Build a Community Center",
+      "description": "Construct a center for community activities and workshops. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 500000 },
+        { "type": "People", "amount": 12 }
+      ],
+      "steps": [],
+      "time": 6,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Start a Recycling Program",
+      "description": "Launch a recycling initiative to promote environmental awareness. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 200000 },
+        { "type": "People", "amount": 6 }
+      ],
+      "steps": [],
+      "time": 3,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Renovate Public Spaces",
+      "description": "Improve public spaces like sidewalks and benches. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 250000 },
+        { "type": "People", "amount": 7 }
+      ],
+      "steps": [],
+      "time": 3,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Start a Neighborhood Watch",
+      "description": "Establish a neighborhood watch program to improve safety. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 100000 },
+        { "type": "People", "amount": 4 }
+      ],
+      "steps": [],
+      "time": 2,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Provide Free Health Clinics",
+      "description": "Offer free health check-ups and basic medical services. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 400000 },
+        { "type": "People", "amount": 10 }
+      ],
+      "steps": [],
+      "time": 5,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Build a Public Library",
+      "description": "Construct a library to provide access to books and educational resources. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 600000 },
+        { "type": "People", "amount": 15 }
+      ],
+      "steps": [],
+      "time": 7,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Organize a Clean-Up Campaign",
+      "description": "Host a community clean-up event to improve the local environment. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 100000 },
+        { "type": "People", "amount": 5 }
+      ],
+      "steps": [],
+      "time": 1,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+    {
+      "name": "Start a Community Garden",
+      "description": "Create a garden where community members can grow their own food. Requires {m} ZAR and {p} people.",
+      "resource": [
+        { "type": "Money", "amount": 200000 },
+        { "type": "People", "amount": 6 }
+      ],
+      "steps": [],
+      "time": 3,
+      "category": "Community",
+      "isChanceSquare": false
+    },
+  {
+    "name": "CHANCE SQUARE",
+    "description": "A business the centre had supported has unfortunately gone bust.\nLose 150,000 ZAR and 15 people",
+    "resource": [
+      { "type": "Money", "amount": -150000 },
+      { "type": "People", "amount": -15 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "CHANCE SQUARE",
+    "description": "To boost your help in the community, the local council has donated for your efforts.\nGain 150,000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": 150000 },
+      { "type": "People", "amount": 0 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "CHANCE SQUARE",
+    "description": "The government continues to support Maker's Centre and donates to stengthen its financial capabilities.\nGain 250,000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": 250000 },
+      { "type": "People", "amount": 0 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "CHANCE SQUARE",
+    "description": "Several participants stopped coming to Maker's Centre.\nLose 20 people",
+    "resource": [
+      { "type": "Money", "amount": 0 },
+      { "type": "People", "amount": -20 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "CHANCE SQUARE",
+    "description": "From international donators online, the centre has amassed a substantial portion to continue community aid\nGain 750,000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": 750000 },
+      { "type": "People", "amount": 0 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "CHANCE",
+    "isChanceSquare": true
   }
-]
+  ]
+

@@ -8,9 +8,13 @@ import java.util.List;
 
 public class Board {
     private List<Node> nodes;
+    List<Task> tasks;
+    List<Task> chanceSquares;
 
     public Board(List<Task> tasks) {
         nodes = new ArrayList<>();
+        chanceSquares = new ArrayList<>();
+
         generateBoard(tasks); // Pass the list of tasks to generateBoard
     }
 
@@ -18,9 +22,13 @@ public class Board {
         return nodes;
     }
 
-    public void generateBoard(List<Task> tasks) {
-        int gridRows = 5; // 5 rows
-        int gridCols = 6; // 6 columns (5x6 = 30 nodes)
+    public void generateBoard(List<Task> allTasks) {
+        // Separate the normal tasks and the chance squares
+        tasks = new ArrayList<>(allTasks.subList(0, 40));
+        chanceSquares = new ArrayList<>(allTasks.subList(41, 45));
+
+        int gridRows = 6; // 6 rows
+        int gridCols = 7; // 7 columns (6x7 = 42 nodes)
         float spacing = 100;
 
         // Calculate the starting position for the main board
@@ -28,7 +36,6 @@ public class Board {
         float startY = Gdx.graphics.getHeight() / 2f - spacing;
 
         // Create the starting node (Node 0)
-        // Position it slightly below the main board using the correct coordinates
         float startingNodeX = startX - (gridCols / 2f) * (spacing / 6); // Center it horizontally relative to the board
         float startingNodeY = startY - (spacing / 3); // Position it slightly below the board
         Node startingNode = new Node(startingNodeX, startingNodeY, "Node 0", 20);
@@ -37,10 +44,17 @@ public class Board {
         startingNode.updateColour(); // Update its color (should be yellow)
         nodes.add(startingNode); // Add the starting node to the list
 
-        // Shuffle the tasks to ensure random distribution
+        // Shuffle the chance squares to ensure random distribution
+        java.util.Collections.shuffle(chanceSquares);
+        // Add two random chance squares to the tasks list
+        Task chance1 = chanceSquares.remove(0);
+        Task chance2 = chanceSquares.remove(0);
+        tasks.add(chance1);
+        tasks.add(chance2);
+        // Shuffle all the tasks and two chance squares
         java.util.Collections.shuffle(tasks);
 
-        // Generate the 30 nodes in an isometric grid format
+        // Generate the 42 nodes in an isometric grid format
         for (int row = 0; row < gridRows; row++) {
             for (int col = 0; col < gridCols; col++) {
                 float isoX = startX + (col - row) * spacing * 0.5f;   // Isometric x
@@ -49,7 +63,7 @@ public class Board {
 
                 // Assign a task to the node
                 if (!tasks.isEmpty()) {
-                    Task task = tasks.remove(0); // Remove the first task from the list (already shuffled)
+                    Task task = tasks.remove(0);
                     node.setTask(task);
                 }
 

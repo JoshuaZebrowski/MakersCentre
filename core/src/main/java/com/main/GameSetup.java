@@ -37,9 +37,32 @@ public class GameSetup implements Screen {
 
     private List<Task> tasks; // List to store tasks loaded from JSON
 
+    private GameState gameState;
+
+    public GameSetup() {
+        // Initialize the GameState
+        gameState = new GameState();
+        gameState.players = new ArrayList<>();
+        gameState.nodes = new ArrayList<>();
+        gameState.globalTurn = 0;
+        gameState.years = 0;
+        gameState.seasons = new ArrayList<>(List.of("Spring", "Summer", "Autumn", "Winter"));
+        gameState.currentSeason = gameState.seasons.get(0);
+        gameState.gameMode = "default";
+    }
+
     public void show() {
+
+        // Use gameState to initialize players, nodes, etc.
+        PlayerManager.getInstance().reset(); // Reset players
+        PlayerManager.getInstance().addPlayer(new Player("Player 1", randomColor())); // Add initial player
+
         // Load tasks from JSON
-        tasks = ResourceLoader.loadTask(); // Assuming ResourceLoader.loadTask() returns a List<Task>
+        tasks = ResourceLoader.loadTask();
+        if (tasks == null || tasks.isEmpty()) {
+            Gdx.app.error("ERROR", "Failed to load tasks from JSON");
+            return;
+        }
 
         // Set up the Stage and Skin (used for UI elements like buttons)
         stage = new Stage();
@@ -54,7 +77,12 @@ public class GameSetup implements Screen {
         nameFields = new ArrayList<>();
 
         // Initialize first player and their position
+        PlayerManager.getInstance().reset();
         PlayerManager.getInstance().addPlayer(new Player("Player 1", randomColor()));
+        if (PlayerManager.getInstance().getPlayers().isEmpty()) {
+            Gdx.app.error("ERROR", "No players initialized");
+            return;
+        }
 
         playerPositions.add(new Vector2(100, yPosition));
 
@@ -68,31 +96,30 @@ public class GameSetup implements Screen {
         startButton.setSize(200, 50);
         startButton.setPosition(Gdx.graphics.getWidth() / 2 - startButton.getWidth() / 2, yPosition - 150);
 
-        // Add a click listener for the button
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-                // Switch to the Main screen (the actual game screen)
+                // Reset the game state
+                resetGame();
+                Gdx.app.log("DEBUG", "Game state reset");
 
-                boolean a = true;
-
-                for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
-                    if (nameFields.get(i).getText().isEmpty()) { // Use isEmpty() instead of == ""
-                        a = false;
-                    }
+                // Initialize players
+                PlayerManager.getInstance().reset();
+                for (int i = 0; i < nameFields.size(); i++) {
+                    Player player = new Player(nameFields.get(i).getText(), randomColor());
+                    PlayerManager.getInstance().addPlayer(player);
                 }
 
-                if (a) {
-                    for (int i = 0; i < PlayerManager.getInstance().getPlayers().size(); i++) {
-                        PlayerManager.getInstance().getPlayers().get(i).setName(nameFields.get(i).getText() + "#" + i);
-                    }
+                // Create the board with the list of tasks
+                Board board = new Board(new ArrayList<>(tasks));
+                Gdx.app.log("DEBUG", "Board initialized with nodes: " + board.getNodes().size());
 
-                    // Create the board with the list of tasks
-                    Board board = new Board(new ArrayList<>(tasks)); // Pass the tasks to the Board
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new Main(board.getNodes()));
-                }
+                // Pass the GameState to the Main class
+                Gdx.app.log("DEBUG", "Switching to Main screen");
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new Main(board.getNodes(), gameState));
             }
         });
+
 
         // Create the Plus Button
         plusButton = new TextButton("+", skin);
@@ -102,11 +129,11 @@ public class GameSetup implements Screen {
         // Create the minus Button
         minusButton = new TextButton("-", skin);
         minusButton.setSize(50, 50);
-        minusButton.setPosition(playerPositions.get(0).x + circleRadius + 20, yPosition-50);
+        minusButton.setPosition(playerPositions.get(0).x + circleRadius + 20, yPosition - 50);
 
-        if(PlayerManager.getInstance().getPlayers().size() == 1){
+        if (PlayerManager.getInstance().getPlayers().size() == 1) {
             minusButton.setVisible(false);
-        }else{
+        } else {
             minusButton.setVisible(true);
         }
 
@@ -114,16 +141,10 @@ public class GameSetup implements Screen {
         plusButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-                if(PlayerManager.getInstance().getPlayers().size() == 1){
-                    minusButton.setVisible(false);
-                }else{
-                    minusButton.setVisible(true);
-                }
-
                 if (PlayerManager.getInstance().getPlayers().size() < 4) {
                     // Add a new player to the list
                     Player newPlayer = new Player("Player " + (PlayerManager.getInstance().getPlayers().size() + 1), randomColor());
-                    PlayerManager.getInstance().getPlayers().add(newPlayer);
+                    PlayerManager.getInstance().getPlayers().add(newPlayer); // Add the player to PlayerManager
 
                     // Update position for the new player
                     float newX = playerPositions.get(playerPositions.size() - 1).x + circleRadius * 2 + spacing;
@@ -136,9 +157,9 @@ public class GameSetup implements Screen {
 
                     // Update the plus button position
                     plusButton.setPosition(newX + circleRadius + 20, yPosition);
-                    minusButton.setPosition(newX + circleRadius + 20, yPosition-50);
+                    minusButton.setPosition(newX + circleRadius + 20, yPosition - 50);
 
-                    if(PlayerManager.getInstance().getPlayers().size() == 4){
+                    if (PlayerManager.getInstance().getPlayers().size() == 4) {
                         plusButton.setVisible(false);
                     }
                 }
@@ -149,9 +170,9 @@ public class GameSetup implements Screen {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
                 if (PlayerManager.getInstance().getPlayers().size() > 1) {
-                    if(PlayerManager.getInstance().getPlayers().size() == 1){
+                    if (PlayerManager.getInstance().getPlayers().size() == 1) {
                         minusButton.setVisible(false);
-                    }else{
+                    } else {
                         minusButton.setVisible(true);
                     }
 
@@ -164,9 +185,9 @@ public class GameSetup implements Screen {
 
                     // Update the plus button position
                     plusButton.setPosition(newX + circleRadius + 20, yPosition);
-                    minusButton.setPosition(newX + circleRadius + 20, yPosition-50);
+                    minusButton.setPosition(newX + circleRadius + 20, yPosition - 50);
 
-                    if(PlayerManager.getInstance().getPlayers().size() < 4){
+                    if (PlayerManager.getInstance().getPlayers().size() < 4) {
                         plusButton.setVisible(true);
                     }
                 }
@@ -199,9 +220,9 @@ public class GameSetup implements Screen {
         stage.addListener(colorPickerListener);
     }
 
-    private boolean checkPlayerTakenColour(String hex){
+    private boolean checkPlayerTakenColour(String hex) {
         for (Player player : PlayerManager.getInstance().getPlayers()) {
-            if(player.color.equals(Color.valueOf(hex))){
+            if (player.color.equals(Color.valueOf(hex))) {
                 return true;
             }
         }
@@ -284,7 +305,7 @@ public class GameSetup implements Screen {
         colorPickerDialog.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if(!colorPickerDialog.isVisible()){
+                if (!colorPickerDialog.isVisible()) {
                     colorTexture1.dispose();
                     colorTexture2.dispose();
                     colorTexture3.dispose();
@@ -309,6 +330,8 @@ public class GameSetup implements Screen {
             MathUtils.random(0.5f, 1f),  // Blue channel (light range)
             1f                           // Alpha channel (fully opaque)
         );
+
+
     }
 
     @Override
@@ -336,6 +359,29 @@ public class GameSetup implements Screen {
         }
     }
 
+    public void resetGame() {
+        // Reset players
+        PlayerManager.getInstance().reset();
+
+        // Reset nodes
+        gameState.nodes.clear();
+
+        // Reset other game state variables
+        gameState.globalTurn = 0;
+        gameState.years = 0;
+        gameState.currentSeason = gameState.seasons.get(0);
+        gameState.gameMode = "default";
+    }
+
+    public void resetGameState() {
+        gameState.players.clear();
+        gameState.nodes.clear();
+        gameState.globalTurn = 0;
+        gameState.years = 0;
+        gameState.currentSeason = gameState.seasons.get(0);
+        gameState.gameMode = "default";
+    }
+
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -343,8 +389,7 @@ public class GameSetup implements Screen {
 
     @Override
     public void hide() {
-        stage.dispose();
-        shapeRenderer.dispose();
+        dispose(); // Dispose of resources when the screen is hidden
     }
 
     @Override
@@ -357,5 +402,18 @@ public class GameSetup implements Screen {
 
     @Override
     public void dispose() {
+        Gdx.app.log("DEBUG", "GameSetup disposed");
+        if (stage != null) {
+            stage.dispose();
+            stage = null; // Set to null to avoid double disposal
+        }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+            shapeRenderer = null; // Set to null to avoid double disposal
+        }
+        if (skin != null) {
+            skin.dispose();
+            skin = null; // Set to null to avoid double disposal
+        }
     }
 }

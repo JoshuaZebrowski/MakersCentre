@@ -19,13 +19,15 @@ import com.main.Tooltip;
 import com.main.player.playerTab;
 import com.main.tooltips.*;
 import com.main.weatherSystem.WeatherManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import java.util.*;
 
 import static com.badlogic.gdx.Gdx.input;
 
 public class Main implements Screen {
+
+    private float currentZoom = 1.0f; // Default zoom level
+
     private ShapeRenderer shapeRenderer;
     private List<Node> nodes;
     private Node currentNode;
@@ -96,6 +98,23 @@ public class Main implements Screen {
     // Tasks
     private ArrayList<Task> task;
     private boolean attemptedTaskSelection = false; // Tracks if the player tried to select a task
+    // will store the all the selected tasks for an objective
+    private List<Task> selectedEducationTasks = new ArrayList<>();
+    private List<Task> selectedFinanceTasks = new ArrayList<>();
+    private List<Task> selectedBusinessTasks = new ArrayList<>();
+    private List<Task> selectedCommunityTasks = new ArrayList<>();
+    private boolean financeObjectiveCanStart = false;
+    private boolean hasFinanceObjectiveStarted = false;
+    private boolean businessObjectiveCanStart = false;
+    private boolean hasBusinessObjectiveStarted = false;
+    private boolean educationObjectiveCanStart = false;
+    private boolean hasEducationObjectiveStarted = false;
+    private boolean communityObjectiveCanStart = false;
+    private boolean hasCommunityObjectiveStarted = false;
+
+
+    private GameState gameState; // Add a GameState field
+
 
     // Timer for no movement left text prevent it from being spammed
     private boolean hasClickedNM = false;
@@ -123,11 +142,24 @@ public class Main implements Screen {
     private boolean hasMoved = false;
     private boolean attemptedPrematureTurnEnd = false;
 
+    private Map<String, Player> objectiveOwners; // Tracks which player owns which objective
 
-    public Main(List<Node> nodes) {
-        this.nodes = nodes;
-        players = PlayerManager.getInstance().getPlayers();
+
+    public Main(List<Node> nodes, GameState gameState) { // Use lowercase 'gameState' for the parameter
+        this.gameState = gameState; // Initialize the GameState
+        this.nodes = nodes; // Initialize nodes from the Board
+
+        this.players = PlayerManager.getInstance().getPlayers(); // Initialize players
+
+        // Initialize other game state variables
+        this.globalTurn = gameState.globalTurn;
+        this.years = gameState.years;
+        this.currentSeason = gameState.currentSeason;
+        this.gameMode = gameState.gameMode;
+
+        // Initialize other game state variables
         initializeGame();
+        objectiveOwners = new HashMap<>(); // Initialize the map
         SoundManager.getInstance().loadMusic("background", "audio/backgroundMusic.mp3");
 
         seasons = new ArrayList<>();
@@ -147,8 +179,18 @@ public class Main implements Screen {
         return players.get(turn);
     }
 
+    public float getCurrentZoom() {
+        return currentZoom;
+    }
+
+    public void setCurrentZoom(float zoom) {
+        this.currentZoom = zoom;
+        camera.zoom = zoom;
+        camera.update(); // Update the camera's projection matrix
+    }
     @Override
     public void show() {
+
         shapeRenderer = new ShapeRenderer();
         batch = new SpriteBatch();
 
@@ -157,6 +199,7 @@ public class Main implements Screen {
 
         // Set up cameras and viewport BEFORE creating the renderer
         setupCameras();
+        camera.zoom = currentZoom;
 
         // Now create the renderer with the initialized cameras and viewport
         renderer = new Renderer(camera, uiCamera, viewport, circleRadius, players.get(0), this);
@@ -305,6 +348,45 @@ public class Main implements Screen {
 
     @Override
     public void render(float delta) {
+
+        // Check if any player has run out of resources
+        for (Player player : players) {
+            if (player.getRand().getAmount() <= 0 || player.getRand2().getAmount() <= 0) {
+                // Trigger game-over screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new GameOverScreen(this, player));
+                return; // Stop rendering the current screen
+            }
+        }
+
+        if (financeObjectiveCanStart && !hasFinanceObjectiveStarted) {
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new StartObjectiveScreen(this, "Financial", () -> {
+                // Logic to execute when the objective is confirmed
+                Gdx.app.log("DEBUG", "Financial objective confirmed to start");
+            }));
+            hasFinanceObjectiveStarted = true;
+
+        }
+        if (educationObjectiveCanStart && !hasEducationObjectiveStarted) {
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new StartObjectiveScreen(this, "Educational", () -> {
+                // Logic to execute when the objective is confirmed
+                Gdx.app.log("DEBUG", "Educational objective confirmed to start");
+            }));
+            hasEducationObjectiveStarted = true;
+        }
+        if (businessObjectiveCanStart && !hasBusinessObjectiveStarted) {
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new StartObjectiveScreen(this, "Business", () -> {
+                // Logic to execute when the objective is confirmed
+                Gdx.app.log("DEBUG", "Business objective confirmed to start");
+            }));
+            hasBusinessObjectiveStarted = true;
+        }
+        if (communityObjectiveCanStart && !hasCommunityObjectiveStarted) {
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new StartObjectiveScreen(this, "Community", () -> {
+                // Logic to execute when the objective is confirmed
+                Gdx.app.log("DEBUG", "Community objective confirmed to start");
+            }));
+            hasCommunityObjectiveStarted = true;
+        }
         handleInput();
 
         if (!isWeatherInfoScreenVisible) {
@@ -575,8 +657,18 @@ public class Main implements Screen {
 
         handleMakersCenter();
 
-        handleTaskRequest(); // Handle task requests
+        // Handle 'g' key press to give the task to another player
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            handleTaskRequest();
+        }
 
+        // Handle 't' key press to open the PlayerTabScreen
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            Player currentPlayer = players.get(turn);
+            ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayerTabScreen(this, currentPlayer));
+        }
+
+        // Handle 'w' key press to toggle the weather info screen
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             isWeatherInfoScreenVisible = !isWeatherInfoScreenVisible;
 
@@ -740,90 +832,201 @@ public class Main implements Screen {
 
 
     private void handleTaskRequest() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
-            Player currentPlayer = players.get(turn);
-            Task task = currentNode.getTask();
+        Player currentPlayer = players.get(turn);
+        Task task = currentNode.getTask();
 
-            if (task != null && !task.taskTaken()) {
-                // Check if the current player can select the task
-                if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
-                    // The current player can select the task, so no need to send a request
-                    Gdx.app.log("DEBUG", "You can select this task yourself.");
-                    return;
-                }
+        // Check if the objective is already claimed by another player
+        boolean isObjectiveClaimed = false;
+        if (currentNode.getTask() != null) {
+            String taskCategory = currentNode.getTask().getCategory();
+            isObjectiveClaimed = getObjectiveOwners().containsKey(taskCategory) &&
+                getObjectiveOwners().get(taskCategory) != players.get(turn);
+        }
 
-                // Find eligible players
-                List<Player> eligiblePlayers = new ArrayList<>();
-                for (Player player : players) {
-                    if (player != currentPlayer && (player.getCurrentCategory() == null || player.getCurrentCategory().equals(task.getCategory()))) {
-                        eligiblePlayers.add(player);
-                    }
-                }
+        if (task != null && !task.taskTaken()) {
+            // Check if the current player can select the task
+            if (!isObjectiveClaimed && (currentPlayer.getCurrentCategory() == null ||
+                currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory()))) {
+                // The current player can select the task, so no need to send a request
+                Gdx.app.log("DEBUG", "You can select this task yourself.");
+                return;
+            }
 
-                if (eligiblePlayers.isEmpty()) {
-                    // No eligible players, show the "No Eligible Players" screen
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new NoEligiblePlayersScreen(this));
-                } else {
-                    // Show the PlayerRequestScreen with eligible players
-                    ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayerRequestScreen(this, task, eligiblePlayers));
+            // Find eligible players (players who can select this task)
+            List<Player> eligiblePlayers = new ArrayList<>();
+            for (Player player : players) {
+                if (player != currentPlayer && (player.getCurrentCategory() == null || player.getCurrentCategory().equals(task.getCategory()))) {
+                    eligiblePlayers.add(player);
                 }
+            }
+
+            if (eligiblePlayers.isEmpty()) {
+                // No eligible players, show the "No Eligible Players" screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new NoEligiblePlayersScreen(this));
+            } else {
+                // Show the PlayerRequestScreen with eligible players
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new PlayerRequestScreen(this, task, eligiblePlayers));
             }
         }
     }
-
 
 
 
     private void handleAttachTask() {
-        // Only allow task selection if the player has no moves left
+        Player currentPlayer = players.get(turn);
+
         if (currentMoves >= maxMoves) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-                attemptedTaskSelection = true; // Player attempted to select a task
+                attemptedTaskSelection = true;
 
                 if (currentNode.getTask() != null && !currentNode.getTask().taskTaken()) {
-                    Player currentPlayer = players.get(turn);
-                    Task task = currentNode.getTask();
-
-                    // Check if the player can select this task
-                    if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(task.getCategory())) {
-                        // Calculate 20% of the required resources
-                        Resource requiredMoney = task.getResources().get(0); // Assuming the first resource is money
-                        Resource requiredPeople = task.getResources().get(1); // Assuming the second resource is people
-
-                        int selectingFeeMoney = (int) (requiredMoney.getAmount() * 0.2);
-                        int selectingFeePeople = (int) (requiredPeople.getAmount() * 0.2);
-
-                        // Check if the player has enough resources to pay the selecting fee
-                        if (currentPlayer.hasEnoughResources(new Resource("Money", selectingFeeMoney))
-                            && currentPlayer.getRand2().getAmount() >= selectingFeePeople) {
-
-                            // Show the TaskSelectionScreen
-                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
-                                // Deduct the selecting fee and assign the task (only when confirmed)
-                                currentPlayer.getRand().deductAmount(selectingFeeMoney); // Deduct money
-                                currentPlayer.getRand2().deductAmount(selectingFeePeople); // Deduct people
-                                currentPlayer.addTask(task);
-                                task.setOwner(currentPlayer);
-                                task.setTaken(true); // Mark the task as selected
-                                renderer.updatePlayerTab(currentPlayer);
-                                Gdx.app.log("DEBUG", "Selecting fee deducted: " + selectingFeeMoney + " ZAR and " + selectingFeePeople + " people");
-                                Gdx.app.log("DEBUG", "Task selected but not started");
-                                renderer.setPlayerTab();
-
-                                // Refresh the playerTab to reflect the new task
-                                tab.playerTarget(currentPlayer);
-                            }));
-                        } else {
-                            Gdx.app.log("DEBUG", "Not enough resources to pay the selecting fee.");
-                        }
-                    } else {
-                        Gdx.app.log("DEBUG", "Cannot select tasks from different categories.");
+                    if (currentNode.getTask().isChanceSquare()){
+                        handleChanceSquare(currentNode);
                     }
+                    else
+                    {
+
+                        Task task = currentNode.getTask();
+                        String taskCategory = task.getCategory();
+
+                        // Check if the player has an active task
+                        if (currentPlayer.hasActiveTask()) {
+                            Gdx.app.log("DEBUG", "You already have an active task. Complete it before starting another.");
+                            return;
+                        }
+
+                        // Check if the objective is already claimed by another player
+                        if (objectiveOwners.containsKey(taskCategory) && objectiveOwners.get(taskCategory) != currentPlayer) {
+                            Gdx.app.log("DEBUG", "This objective is already claimed by another player.");
+                            return; // Exit if the objective is claimed by someone else
+                        }
+
+                        // If the objective is not claimed, claim it for the current player
+                        if (!objectiveOwners.containsKey(taskCategory)) {
+                            objectiveOwners.put(taskCategory, currentPlayer);
+                            Gdx.app.log("DEBUG", "Player " + currentPlayer.getName() + " has claimed the " + taskCategory + " objective.");
+                        }
+
+                        // Check if the task belongs to the player's current objective category
+                        if (currentPlayer.getCurrentCategory() == null || currentPlayer.getCurrentCategory().equals(taskCategory)) {
+                            if (!currentPlayer.isObjectiveStarted()) {
+                                // Selection Phase: Select the task
+                                    // Show the TaskSelectionScreen for confirmation
+                                    ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskSelectionScreen(this, task, () -> {
+                                        // Deduct the selecting fee and assign the task
+                                        currentPlayer.getRand().deductAmount((int) (task.getResources().get(0).getAmount() * 0.2));
+                                        currentPlayer.getRand2().deductAmount((int) (task.getResources().get(1).getAmount() * 0.2));
+                                        currentPlayer.addTask(task);
+                                        task.setOwner(currentPlayer);
+                                        task.setTaken(true);
+
+                                        // Log the selected task in the appropriate list
+                                        switch (taskCategory) {
+                                            case "Educational":
+                                                selectedEducationTasks.add(task);
+                                                Gdx.app.log("DEBUG", "Education task added number" + selectedEducationTasks.size());
+                                                break;
+                                            case "Financial":
+                                                selectedFinanceTasks.add(task);
+                                                Gdx.app.log("DEBUG", "Finance task added number" + selectedFinanceTasks.size());
+                                                break;
+                                            case "Business":
+                                                selectedBusinessTasks.add(task);
+                                                Gdx.app.log("DEBUG", "Business task added number" + selectedBusinessTasks.size());
+                                                break;
+                                            case "Community":
+                                                selectedCommunityTasks.add(task);
+                                                Gdx.app.log("DEBUG", "Community task added number" + selectedCommunityTasks.size());
+                                                break;
+                                        }
+
+                                        // Check if all tasks for the objective have been selected
+                                        if (selectedEducationTasks.size() == 10 && taskCategory.equals("Educational")) {
+                                            educationObjectiveCanStart = true;
+                                            Gdx.app.log("DEBUG", "Education Objective Should Start");
+                                        } else if (selectedFinanceTasks.size() == 10 && taskCategory.equals("Financial")) {
+                                            financeObjectiveCanStart = true;
+                                            Gdx.app.log("DEBUG", "Finance Objective Should Start");
+                                        } else if (selectedBusinessTasks.size() == 10 && taskCategory.equals("Business")) {
+                                            businessObjectiveCanStart = true;
+                                            Gdx.app.log("DEBUG", "Business Objective Should Start");
+                                        }
+                                        else if (selectedCommunityTasks.size() == 10 && taskCategory.equals("Community")) {
+                                            communityObjectiveCanStart = true;
+                                            Gdx.app.log("DEBUG", "Community Objective Should Start");
+                                        }
+
+                                        renderer.updatePlayerTab(currentPlayer);
+                                        Gdx.app.log("DEBUG", "Task selected but not started.");
+                                    }));
+
+                            }
+
+
+                        }
+                    }
+
                 }
+                // starting a task
+                else if (currentNode.getTask() != null && currentNode.getTask().taskTaken()){
+                    if (currentNode.getTask().getCategory().equals("Educational") &&
+                        currentPlayer.getCurrentCategory().equals("Educational") && educationObjectiveCanStart){
+                        // if the task hasn't been started and player doesn't have active task
+                        if (!currentNode.getTask().isCompleted() && !currentNode.getTask().isActive() &&
+                        !currentPlayer.hasActiveTask()) {
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskStartConfirmationScreen(this, currentNode.getTask(), () -> {
+                                currentPlayer.startTask(currentNode.getTask());
+                            }));
+                        }
+                        else {
+                            Gdx.app.log("DEBUG", "Task cannot be started as it already has been");
+                        }
+                    }
+                    if (currentNode.getTask().getCategory().equals("Financial") &&
+                        currentPlayer.getCurrentCategory().equals("Financial") && financeObjectiveCanStart){
+                        // if the task hasn't been started and player doesn't have active task
+                        if (!currentNode.getTask().isCompleted() && !currentNode.getTask().isActive() &&
+                            !currentPlayer.hasActiveTask()) {
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskStartConfirmationScreen(this, currentNode.getTask(), () -> {
+                                currentPlayer.startTask(currentNode.getTask());
+                            }));
+                        }
+                        else {
+                            Gdx.app.log("DEBUG", "Task cannot be started as it already has been");
+                        }
+                    }
+                    if (currentNode.getTask().getCategory().equals("Business") &&
+                        currentPlayer.getCurrentCategory().equals("Business") && businessObjectiveCanStart){
+                        // if the task hasn't been started and player doesn't have active task
+                        if (!currentNode.getTask().isCompleted() && !currentNode.getTask().isActive() &&
+                            !currentPlayer.hasActiveTask()) {
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskStartConfirmationScreen(this, currentNode.getTask(), () -> {
+                                currentPlayer.startTask(currentNode.getTask());
+                            }));
+                        }
+                        else {
+                            Gdx.app.log("DEBUG", "Task cannot be started as it already has been");
+                        }
+                    }
+                    if (currentNode.getTask().getCategory().equals("Community") &&
+                        currentPlayer.getCurrentCategory().equals("Community") && communityObjectiveCanStart){
+                        // if the task hasn't been started and player doesn't have active task
+                        if (!currentNode.getTask().isCompleted() && !currentNode.getTask().isActive() &&
+                            !currentPlayer.hasActiveTask()) {
+                            ((Game) Gdx.app.getApplicationListener()).setScreen(new TaskStartConfirmationScreen(this, currentNode.getTask(), () -> {
+                                currentPlayer.startTask(currentNode.getTask());
+                            }));
+                        }
+                        else {
+                            Gdx.app.log("DEBUG", "Task cannot be started as it already has been");
+                        }
+                    }
+
+                }
+
             }
         }
     }
-
 
 
 
@@ -844,10 +1047,14 @@ public class Main implements Screen {
             if (currentPlayer.getTaskSpeed() == 0) {
                 // Task completed
                 Task completedTask = currentPlayer.getTasks().get(currentPlayer.getTasks().size() - 1);
-                currentPlayer.setCommunityMorale(currentPlayer.getCommunityMorale() + completedTask.getCommunityMoraleImpact());
                 completedTask.setCompleted(true);
                 Gdx.app.log("DEBUG", "Task completed: " + completedTask.getName());
             }
+        }
+
+        // Progress the active task (if any)
+        if (currentPlayer.hasActiveTask()) {
+            currentPlayer.progressTask();
         }
 
         // Check if all tasks of the current category are complete
@@ -941,20 +1148,12 @@ public class Main implements Screen {
 
     private void handleSpaceBarInput() {
         if (input.isKeyPressed(Input.Keys.SPACE)) {
-            // Check if the player is at a dead end (no available moves)
-            boolean isDeadEnd = true;
-            for (Node linkedNode : currentNode.links) {
-                if (!players.get(turn).hasVisited(linkedNode)) {
-                    isDeadEnd = false;
-                    break;
-                }
-            }
-
-            // Allow ending the turn if the player hasn't moved, has used all moves, or is at a dead end
-            if (!hasMoved || currentMoves >= maxMoves || isDeadEnd) {
+            // Check if the player has used all of their moves
+            if (currentMoves >= maxMoves) {
                 isSpaceBarHeld = true;
                 spaceBarHeldTime += Gdx.graphics.getDeltaTime();
 
+                // If the space bar is held long enough, end the turn
                 if (spaceBarHeldTime >= requiredHoldTime) {
                     endTurn();
                 }
@@ -976,9 +1175,9 @@ public class Main implements Screen {
 
     private void handleCameraZoom() {
         if (input.isKeyPressed(Input.Keys.UP)) {
-            renderer.camera.zoom -= 0.02f;
+            setCurrentZoom(currentZoom - 0.02f); // Zoom in
         } else if (input.isKeyPressed(Input.Keys.DOWN)) {
-            renderer.camera.zoom += 0.02f;
+            setCurrentZoom(currentZoom + 0.02f); // Zoom out
         }
     }
 
@@ -1025,6 +1224,10 @@ public class Main implements Screen {
         if (!input.isButtonPressed(Input.Buttons.LEFT)) {
             draggingNodeBox = false;
         }
+    }
+
+    public Map<String, Player> getObjectiveOwners() {
+        return objectiveOwners;
     }
 
     private void handleDebugWindowDrag(float mouseX, float mouseY) {
@@ -1087,6 +1290,34 @@ public class Main implements Screen {
         return currentPlayer.getCurrentCategory(); // Returns "Financial", "Educational", or "Business"
     }
 
+    private void handleChanceSquare(Node node) {
+        Task chanceTask = node.getTask();
+        if (chanceTask != null && chanceTask.isChanceSquare()) {
+            if (!chanceTask.hasBeenOpened()){
+                Player currentPlayer = players.get(turn);
+
+                // Add the resources to the player's resources
+                for (Resource resource : chanceTask.getResources()) {
+                    if (resource.getType().equals("Money")) {
+                        currentPlayer.getRand().addAmount(resource.getAmount());
+                    } else if (resource.getType().equals("People")) {
+                        currentPlayer.getRand2().addAmount(resource.getAmount());
+                    }
+                }
+
+                // Mark the chance square as opened
+                chanceTask.setHasBeenOpened(true);
+
+                // Show the chance square screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new ChanceSquareScreen(this, chanceTask));
+
+                // Do not mark the chance square as taken, so it can be reused
+                Gdx.app.log("DEBUG", "Chance square opened. Resources added to player.");
+            }
+
+        }
+    }
+
     public Color getColorForObjective(String objective) {
         if (objective == null) {
             return Color.WHITE; // Default color if no objective is set
@@ -1098,6 +1329,8 @@ public class Main implements Screen {
                 return Color.GREEN;
             case "Business":
                 return Color.BLUE;
+            case "Community":
+                return Color.PURPLE;
             default:
                 return Color.WHITE; // Default color for unknown objectives
         }

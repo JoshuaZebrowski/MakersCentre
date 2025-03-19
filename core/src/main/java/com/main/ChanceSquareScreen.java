@@ -8,34 +8,28 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class TaskSelectionScreen implements Screen {
+public class ChanceSquareScreen implements Screen {
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture backgroundTexture; // Background texture
-    private Runnable onConfirm; // Callback for confirmation
     private Main main; // Reference to the main game screen
-    private Task task; // The task to be confirmed
+    private Task chanceTask; // The chance square task
 
-
-    public TaskSelectionScreen(Main main, Task task, Runnable onConfirm) {
+    public ChanceSquareScreen(Main main, Task chanceTask) {
         this.main = main;
-        this.task = task;
-        this.onConfirm = onConfirm;
+        this.chanceTask = chanceTask;
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
         font = new BitmapFont();
-        font.getData().setScale(1.5f); // Increase font size
+        font.getData().setScale(4f); // Increase font size
         font.setColor(Color.WHITE);
 
         // Load the background texture
@@ -46,51 +40,21 @@ public class TaskSelectionScreen implements Screen {
         mainTable.setFillParent(true);
         mainTable.center();
 
-        // Add a title label at the top
-        Label titleLabel = new Label("Task Selection", new Label.LabelStyle(font, Color.YELLOW));
-        titleLabel.setFontScale(4f);
-        titleLabel.setAlignment(Align.center);
-        mainTable.add(titleLabel).colspan(2).center().padBottom(20).row();
 
-        // Add the task name (yellow)
-        Label taskNameLabel = new Label(task.getName(), new Label.LabelStyle(font, Color.YELLOW));
-        taskNameLabel.setAlignment(Align.left);
+        // Add the chance square name (yellow)
+        Label taskNameLabel = new Label(chanceTask.getName(), new Label.LabelStyle(font, Color.YELLOW));
+        taskNameLabel.setAlignment(Align.center);
         taskNameLabel.setWrap(false); // Disable wrapping for the title
-        mainTable.add(taskNameLabel).left().width(400).row(); // Set a fixed width for the title
+        mainTable.add(taskNameLabel).left().width(800).row(); // Set a fixed width for the title
 
-        // Add the task description (white)
-        String description = task.getDescription()
-            .replace("{m}", task.getResourceAmountString("Money"))
-            .replace("{p}", task.getResourceAmountString("People"));
+        // Add the chance square description (white)
+        String description = chanceTask.getDescription()
+            .replace("{m}", chanceTask.getResourceAmountString("Money"))
+            .replace("{p}", chanceTask.getResourceAmountString("People"));
         Label descriptionLabel = new Label(description, new Label.LabelStyle(font, Color.WHITE));
-        descriptionLabel.setAlignment(Align.left);
+        descriptionLabel.setAlignment(Align.center);
         descriptionLabel.setWrap(true); // Enable wrapping for the description
-        mainTable.add(descriptionLabel).left().width(400).row(); // Set a fixed width for the description
-
-        // Add Confirm and Cancel buttons
-        TextButton confirmButton = new TextButton("Confirm", new TextButton.TextButtonStyle(null, null, null, font));
-        confirmButton.getLabel().setFontScale(2f);
-        confirmButton.setColor(Color.GREEN);
-        confirmButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                onConfirm.run(); // Run the confirmation logic
-                main.resumeGame(); // Return to the main game screen
-            }
-        });
-
-        TextButton cancelButton = new TextButton("Cancel", new TextButton.TextButtonStyle(null, null, null, font));
-        cancelButton.getLabel().setFontScale(2f);
-        cancelButton.setColor(Color.RED);
-        cancelButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                main.resumeGame(); // Return to the main game screen
-            }
-        });
-
-        mainTable.add(confirmButton).pad(20).width(200).height(60);
-        mainTable.add(cancelButton).pad(20).width(200).height(60);
+        mainTable.add(descriptionLabel).left().width(800).row(); // Set a fixed width for the description
 
         // Add the main table to the stage
         stage.addActor(mainTable);
@@ -99,6 +63,7 @@ public class TaskSelectionScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+
     }
 
     @Override
@@ -116,7 +81,7 @@ public class TaskSelectionScreen implements Screen {
         stage.act(delta);
         stage.draw();
 
-        // Handle the Escape key to cancel
+        // Handle the Escape key to exit
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             main.resumeGame(); // Return to the main game screen
         }

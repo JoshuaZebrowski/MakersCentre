@@ -103,11 +103,17 @@ public class Node {
                 case "Business":
                     this.color = Color.BLUE;
                     break;
+                case "Community":
+                    this.color = Color.PURPLE;
+                    break;
+                case "CHANCE":
+                    this.color = Color.LIGHT_GRAY;
+                    break;
                 default:
-                    this.color = Color.CORAL;
+                    this.color = Color.WHITE;
             }
         } else {
-            this.color = Color.BLUE; // Default color for nodes without tasks
+            this.color = Color.WHITE; // Default color for nodes without tasks
         }
     }
 

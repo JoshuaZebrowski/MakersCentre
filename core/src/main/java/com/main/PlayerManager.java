@@ -58,9 +58,13 @@ public class PlayerManager {
         }
     }
 
+    public void reset() {
+        players.clear(); // Clear the list of players
+        // Add any other reset logic here
+    }
+
     // check if a player exists by name
     public boolean playerExists(String name) {
         return getPlayerByName(name) != null;
     }
-
 }

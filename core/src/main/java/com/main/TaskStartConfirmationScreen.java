@@ -17,20 +17,17 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class TaskSelectionScreen implements Screen {
+public class TaskStartConfirmationScreen implements Screen {
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture backgroundTexture; // Background texture
-    private Runnable onConfirm; // Callback for confirmation
     private Main main; // Reference to the main game screen
-    private Task task; // The task to be confirmed
+    private Task task; // The task to be started
 
-
-    public TaskSelectionScreen(Main main, Task task, Runnable onConfirm) {
+    public TaskStartConfirmationScreen(Main main, Task task, Runnable onConfirm) {
         this.main = main;
         this.task = task;
-        this.onConfirm = onConfirm;
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
@@ -47,7 +44,7 @@ public class TaskSelectionScreen implements Screen {
         mainTable.center();
 
         // Add a title label at the top
-        Label titleLabel = new Label("Task Selection", new Label.LabelStyle(font, Color.YELLOW));
+        Label titleLabel = new Label("Start Task", new Label.LabelStyle(font, Color.YELLOW));
         titleLabel.setFontScale(4f);
         titleLabel.setAlignment(Align.center);
         mainTable.add(titleLabel).colspan(2).center().padBottom(20).row();
@@ -67,6 +64,20 @@ public class TaskSelectionScreen implements Screen {
         descriptionLabel.setWrap(true); // Enable wrapping for the description
         mainTable.add(descriptionLabel).left().width(400).row(); // Set a fixed width for the description
 
+        // Add the resource cost details
+        double moneyPerTurn = task.getResourceAmount("Money") / task.getTime();
+        int peopleCost = (int) task.getResourceAmount("People");
+        int turns = task.getTime();
+
+        String costDetails = String.format(
+            "Cost per turn: %.2f ZAR\nTotal people: %d\nTurns to complete: %d",
+            moneyPerTurn, peopleCost, turns
+        );
+        Label costLabel = new Label(costDetails, new Label.LabelStyle(font, Color.WHITE));
+        costLabel.setAlignment(Align.left);
+        costLabel.setWrap(true); // Enable wrapping for the cost details
+        mainTable.add(costLabel).left().width(400).row(); // Set a fixed width for the cost details
+
         // Add Confirm and Cancel buttons
         TextButton confirmButton = new TextButton("Confirm", new TextButton.TextButtonStyle(null, null, null, font));
         confirmButton.getLabel().setFontScale(2f);
@@ -74,7 +85,8 @@ public class TaskSelectionScreen implements Screen {
         confirmButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                onConfirm.run(); // Run the confirmation logic
+                // Start the task
+                onConfirm.run();
                 main.resumeGame(); // Return to the main game screen
             }
         });

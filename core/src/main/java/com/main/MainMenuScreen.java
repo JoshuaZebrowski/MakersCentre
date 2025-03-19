@@ -11,13 +11,33 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MainMenuScreen implements Screen {
+    public static final int VIRTUAL_WIDTH = 1920; // Virtual screen width
+    public static final int VIRTUAL_HEIGHT = 1080; // Virtual screen height
     private Stage stage;
     private Skin skin;
     private TextButton startButton;
     private TextButton settingsButton;
 
+    public MainMenuScreen() {
+        stage = new Stage(new ScreenViewport());
+        skin = new Skin(Gdx.files.internal("uiskin.json")); // Ensure the skin is loaded
+        // Initialize buttons and other UI elements
+        startButton = new TextButton("Start", skin);
+        settingsButton = new TextButton("Settings", skin);
+        // Add buttons to the stage
+        stage.addActor(startButton);
+        stage.addActor(settingsButton);
+    }
+
     @Override
     public void show() {
+
+        if (stage == null) {
+            stage = new Stage(new ScreenViewport());
+        }
+        if (skin == null) {
+            skin = new Skin(Gdx.files.internal("uiskin.json"));
+        }
         // Set up the Stage and Skin (used for UI elements like buttons)
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
@@ -35,12 +55,14 @@ public class MainMenuScreen implements Screen {
         settingsButton.setSize(200, 50);
         settingsButton.setPosition(Gdx.graphics.getWidth() / 2 - settingsButton.getWidth() / 2 + 200, Gdx.graphics.getHeight() / 2 - settingsButton.getHeight() / 2);
 
-
-        // Add a click listener for the button
+        //add action listener to start button
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-                // Switch to the Main screen (the actual game screen)
+                // Dispose of the current screen
+                dispose();
+
+                // Create a new instance of the GameSetup class
                 ((Game) Gdx.app.getApplicationListener()).setScreen(new GameSetup());
             }
         });
@@ -77,7 +99,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void hide() {
-        stage.dispose();
+
     }
 
     @Override
@@ -88,6 +110,14 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        stage.dispose();
+        Gdx.app.log("DEBUG", "MainMenuScreen disposed");
+        if (stage != null) {
+            stage.dispose();
+            stage = null; // Set to null to avoid double disposal
+        }
+        if (skin != null) {
+            skin.dispose();
+            skin = null; // Set to null to avoid double disposal
+        }
     }
 }

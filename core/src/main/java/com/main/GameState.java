@@ -27,4 +27,3 @@ public class GameState {
         this.gameMode = gameMode;
     }
 }
-

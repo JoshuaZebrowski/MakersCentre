@@ -19,6 +19,7 @@ public class WeatherInfoScreen implements Screen {
     private BitmapFont font;
     private Texture backgroundTexture; // Background texture
 
+
     public WeatherInfoScreen() {
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();

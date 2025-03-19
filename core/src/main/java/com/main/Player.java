@@ -28,6 +28,10 @@ public class Player {
     // this will track visited nodes to prevent the user from moving backwards on the board
     private List<Node> visitedNodes;
 
+    private Task activeTask;
+
+    private boolean objectiveStarted = false;
+
     public Player(String name, Color color) {
         this.name = name;
         this.color = color;
@@ -36,12 +40,14 @@ public class Player {
         this.pendingTasks = new ArrayList<>();
         this.currentCategory = null;
 
-        this.rand = new Resource("Money", 2000000);
+        this.rand = new Resource("Money", 20000000);
         this.rand2 = new Resource("People", 1000);
         this.taskSpeed = 0; // Initially, no task is in progress
         this.communityMorale = 100; // Start with 100% morale
 
         this.visitedNodes = new ArrayList<>(); // Initialize the list of visited nodes
+
+        this.activeTask = null;
     }
 
     // Add a method to reset the visited nodes at the start of a new turn
@@ -224,5 +230,81 @@ public class Player {
 
     public void setCurrentCategory(String currentCategory) {
         this.currentCategory = currentCategory;
+    }
+
+    // Add getter and setter for activeTask
+    public Task getActiveTask() {
+        return activeTask;
+    }
+
+    public void setActiveTask(Task activeTask) {
+        this.activeTask = activeTask;
+    }
+
+    // Add a method to start a task
+    public void startTask(Task task) {
+
+
+        // Calculate the initial payment
+        double initialMoneyCost = task.getResourceAmount("Money") / task.getTime();
+        double peopleCost = task.getResourceAmount("People");
+
+        // Deduct the initial payment (no check for negative values)
+        rand.deductAmount(initialMoneyCost);
+        rand2.deductAmount(peopleCost);
+
+        // Set the task as active
+        task.setActive(true);
+        task.setRemainingTurns(task.getTime() - 1); // Subtract 1 for the current turn
+        task.deductRemainingMoneyCost(initialMoneyCost);
+
+        // Assign the task to the player
+        activeTask = task;
+        Gdx.app.log("DEBUG", task.getName() + " started. Remaining turns: " + task.getRemainingTurns());
+
+    }
+
+    public void progressTask() {
+        if (activeTask != null) {
+            // Deduct the next payment
+            double moneyCost = activeTask.getResourceAmount("Money") / activeTask.getTime();
+                rand.deductAmount(moneyCost);
+                activeTask.deductRemainingMoneyCost(moneyCost);
+                activeTask.decrementRemainingTurns();
+
+                Gdx.app.log("DEBUG", "Progressed " + activeTask.getName() + ". Remaining turns: " + activeTask.getRemainingTurns());
+
+                // Check if the task is complete
+                if (activeTask.getRemainingTurns() <= 0) {
+                    activeTask.setCompleted(true);
+                    activeTask.setActive(false);
+                    activeTask = null; // Clear the active task
+                    Gdx.app.log("DEBUG", "Task completed.");
+                }
+            }
+        }
+
+
+    // Add a method to check if the player has an active task
+    public boolean hasActiveTask() {
+        return activeTask != null;
+    }
+
+    public int getTurnsLeftForTask() {
+        if (activeTask != null) {
+            return activeTask.getRemainingTurns();
+        }
+        return -1; // Return -1 if no task is active
+    }
+
+
+
+    // Add getter and setter for objectiveStarted
+    public boolean isObjectiveStarted() {
+        return objectiveStarted;
+    }
+
+    public void setObjectiveStarted(boolean objectiveStarted) {
+        this.objectiveStarted = objectiveStarted;
     }
 }
