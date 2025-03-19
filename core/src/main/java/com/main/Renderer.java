@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -449,6 +450,18 @@ public class Renderer {
             float prematureY = playerTabY - prematureLayout.height - 100; // Positioned below the task selection message
             font.draw(batch, prematureMessage, prematureX, prematureY);
         }
+
+        // Add a new button to open the GameEndScreen
+        TextButton gameEndButton = new TextButton("End Game", skin);
+        gameEndButton.setPosition(10, 10); // Position the button at the bottom-left corner
+        gameEndButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ((Game) Gdx.app.getApplicationListener()).setScreen(new GameEndScreen(_main));
+            }
+        });
+
+        stage.addActor(gameEndButton);
 
         batch.end();
 

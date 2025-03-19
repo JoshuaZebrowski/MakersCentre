@@ -1034,6 +1034,7 @@ public class Main implements Screen {
 
 
     public void resumeGame() {
+        Gdx.input.setInputProcessor(renderer.getStage()); // Reset the input processor
         ((Game) Gdx.app.getApplicationListener()).setScreen(this); // Return to the main game screen
     }
 
