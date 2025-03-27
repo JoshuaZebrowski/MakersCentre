@@ -3,13 +3,8 @@ package com.main.weatherSystem;
 import java.util.Random;
 
 public class Spring {
-
-    int[] highTemps = {15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27};
-    int[] highTempsFreq = {5, 6, 4, 7, 7, 8, 16, 11, 10, 8, 6, 8, 4};
-    double[] probabilities = {0.05, 0.06, 0.04, 0.07, 0.07, 0.08, 0.16, 0.11, 0.10, 0.08, 0.06, 0.08, 0.04}; //stores calculated probabilities given previous two arrays
-
+    
     String[] weather = {"Sunny", "Partly Cloudy", "Cloudy", "Rainy", "Thunderstorms"};
-    int[] weatherFreq = {55, 19, 11, 21, 3}; //stores frequency of each weather type
     double[] weatherProbabilities = {0.35, 0.20, 0.15, 0.23, 0.07}; //stores calculated probabilities given previous two arrays
 
     //generates a random weather based on the probabilities
@@ -50,17 +45,4 @@ public class Spring {
         }
     }
 
-    //generates a random temperature based on the probabilities
-    public int generateTemperature() {
-        Random rand = new Random();
-        double randomValue = rand.nextDouble();
-        double cumulativeProbability = 0.0;
-        for (int i = 0; i < probabilities.length; i++) {
-            cumulativeProbability += probabilities[i];
-            if (randomValue <= cumulativeProbability) {
-                return highTemps[i];
-            }
-        }
-        return highTemps[highTemps.length - 1]; // Fallback in case of rounding errors
-    }
 }

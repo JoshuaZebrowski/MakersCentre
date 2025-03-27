@@ -1,10 +1,12 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,25 +20,27 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class TaskStartConfirmationScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
-    private Main main; // Reference to the main game screen
     private Task task; // The task to be started
+    private Texture whiteTexture;
 
-    public TaskStartConfirmationScreen(Main main, Task task, Runnable onConfirm) {
-        this.main = main;
+    public TaskStartConfirmationScreen(Screen previousScreen, Task task, Runnable onConfirm) {
         this.task = task;
 
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        whiteTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        this.previousScreen = previousScreen;
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
         font = new BitmapFont();
-        font.getData().setScale(1.5f); // Increase font size
         font.setColor(Color.WHITE);
-
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
 
         // Create a table to organize the content
         Table mainTable = new Table();
@@ -86,8 +90,9 @@ public class TaskStartConfirmationScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Start the task
+                SoundManager.getInstance().playSound("startingTaskSound");
                 onConfirm.run();
-                main.resumeGame(); // Return to the main game screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
             }
         });
 
@@ -97,7 +102,7 @@ public class TaskStartConfirmationScreen implements Screen {
         cancelButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.resumeGame(); // Return to the main game screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
             }
         });
 
@@ -116,12 +121,13 @@ public class TaskStartConfirmationScreen implements Screen {
     @Override
     public void render(float delta) {
         // Clear the screen
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 
         // Draw the background
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.setColor(0, 0, 0, 0.7f); // Dark semi-transparent
+        batch.draw(whiteTexture, Gdx.graphics.getWidth() / 2f - 400, Gdx.graphics.getHeight() / 2f - 150, 900, 400);
+        batch.setColor(1, 1, 1, 1); // Reset color
         batch.end();
 
         // Draw the stage (text and UI elements)
@@ -130,7 +136,7 @@ public class TaskStartConfirmationScreen implements Screen {
 
         // Handle the Escape key to cancel
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            main.resumeGame(); // Return to the main game screen
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
     }
 
@@ -153,6 +159,5 @@ public class TaskStartConfirmationScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
     }
 }

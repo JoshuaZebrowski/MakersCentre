@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -18,14 +19,12 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class NoEligiblePlayersScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
-    private Main main; // Reference to the main game screen
 
-    public NoEligiblePlayersScreen(Main main) {
-        this.main = main;
+    public NoEligiblePlayersScreen(Screen previousScreen) {
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
@@ -33,8 +32,6 @@ public class NoEligiblePlayersScreen implements Screen {
         font.getData().setScale(1.5f); // Increase font size
         font.setColor(Color.WHITE);
 
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
 
         // Create a table to organize the content
         Table mainTable = new Table();
@@ -59,7 +56,7 @@ public class NoEligiblePlayersScreen implements Screen {
         cancelButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.resumeGame(); // Return to the main game screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
             }
         });
 
@@ -81,9 +78,9 @@ public class NoEligiblePlayersScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Draw the background
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.end();
+//        batch.begin();
+//        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//        batch.end();
 
         // Draw the stage (text and UI elements)
         stage.act(delta);
@@ -91,7 +88,7 @@ public class NoEligiblePlayersScreen implements Screen {
 
         // Handle the Escape key to cancel
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            main.resumeGame(); // Return to the main game screen
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
     }
 
@@ -114,6 +111,5 @@ public class NoEligiblePlayersScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
     }
 }

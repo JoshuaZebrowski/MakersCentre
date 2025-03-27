@@ -1,0 +1,524 @@
+[
+  {
+    "name": "Digital Marketing Team",
+    "description": "Local businesses need online marketing teams to spread their potential audience. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 25000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Work Placement Opportunities",
+    "description": "Several businesses visited Maker's Centre to advertise placement in their workplaces, an abundance of Maker's Centre participants tries to apply but need specialised tertiary training to be accepted.Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Local Business IT Improvement ",
+    "description": "Maker's Centre is advertised to provide IT knowledgeable workers. Two local businesses have requested tertiary IT skilled workers. Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Tertiary Skills Lesson",
+    "description": "A general tertiary skills lesson in the Maker's Centre which has multiple segments. Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 30 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Event Hiring",
+    "description": "The upcoming Johannesburg Art Festival is looking for IT-related staff. They have requested if any participants of Maker's Centre would be available. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 6000 },
+      { "type": "People", "amount": 12 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Coding Classes",
+    "description": "The centre is providing coding classes to teach basics for programming languages. Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 24 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "IT Certification Program",
+    "description": "A program designed to credit participants with IT qualifications capable for high-demand tech jobs. Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 30 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "IT Engineer Experience ",
+    "description": "Local engineering companies are short-staffed on graphic designers. Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 24 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Digital Arts Day",
+    "description": "For fun, the centre is hosting a day with special graphic design software to increase interest in participating with the centre. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 30000 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "AI Education Class ",
+    "description": "Participants are welcomed to the centre to experience the class based upon AI with expert guest speakers. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 20000 },
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Educational",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Starter Investment",
+    "description": "This new upcoming starter business needs an investment in order to open its doors. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 50000 }
+    ],
+    "steps": [],
+    "time": 2,
+
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Loan for Expansion",
+    "description": "This recently popular business is requesting for a segmented loan in order to capitalise on its surging growth. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 60000 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Infrastructure Financing",
+    "description": "A successful past participant of Maker's Centre has permission to build a shop for their business. They have applied to receive funding to start the process. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 150000 }
+    ],
+    "steps": [],
+    "time": 5,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Further Education for Participant",
+    "description": "A participant has successfully been accepted into a third level education course. However, they cannot cover the expense of the first year of tuition. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 35000 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Small Business Grant",
+    "description": "Local business starting out has applied for a grant to purchase additional equipment. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 50000 }
+
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Sponsorship Fund",
+    "description": "Local tech competition requires a sponsorship to entice participants for their startup contest. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 35000 }
+
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Renewable Energy Grant",
+    "description": "A local entrepreneur wants to incorporate renewable energy into their business, using solar panels. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 90000 }
+
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Solar Panel Maintenance",
+    "description": "One of the solar panels on the centre's roof was damaged due to weather, it needs to be repaired. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 30000 }
+
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Local Business Expansion",
+    "description": "A successful business wants to expand to a second location in Maker's Valley but needs financial support. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 15000 }
+
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Export Development Fund",
+    "description": "A local business wants to export its products internationally but needs funding for it. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 200000 }
+
+    ],
+    "steps": [],
+    "time": 4,
+    "category": "Financial",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Local Entrepreneur Workshop",
+    "description": "A local tech entrepreneur wants to visit the Maker's Centre and give lessons on how to use computer software. Food must be provided. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 1000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Group Trip to Local Business",
+    "description": "A local business has invited a Maker's Centre workshop group to their shop, to display a day of work. Transport is needed for the group. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 1500 }
+
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Workshop Week",
+    "description": "Maker's Centre successfully garnered several business entrepreneurs to visit the centre one day a week each. It is meant to be the biggest workshop attendance ever. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 12000 },
+      { "type": "People", "amount": 15 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Potential Workshop Addition",
+    "description": "Participants of Maker's Centre have requested to do a workshop based on textile skills. Textile machinery will need to be ordered for iT. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 15000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Customer Service Workshop",
+    "description": "The centre is providing a workshop for participants to practice their customer service skills. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 5000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Product Design Consultation",
+    "description": "Local manufacturer wants to propose a new design, it is successful. However, they now need the manufacturing cost financed. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 30000 }
+
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Budgeting Training",
+    "description": "The centre is holding workshops on educating the importance of budgeting financially for good cash flow management. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 20000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Business Proposition Day",
+    "description": "The centre is holding workshops on educating the importance of budgeting financially for good cash flow management. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 60000 },
+      { "type": "People", "amount": 40 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Brand Identity Consultation",
+    "description": "Local business has inquired interest in any suitable participants of the centre to employ along with a consultation to help strengthen its identity in the market . Requires {p} people.",
+    "resource": [
+      { "type": "People", "amount": 20 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Green Business Practice ",
+    "description": "A local business wants to adopt a more sustainable impact, it has applied for finance to remake their manufacturing process. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 50000 },
+      { "type": "People", "amount": 6 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Business",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Emergency Relief Fund",
+    "description": "A power outage has affected several local businesses, and they require financial assistance to recover. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 100000 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Community Garden",
+    "description": "The local community has signed a petition to expand on the community garden, the centre should contribute to the cause. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 20000 },
+      { "type": "People", "amount": 4 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Damage to Street",
+    "description": "The surrounding road to the centre is damaged with potholes and cracks. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 10000 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Local Library Upgrade",
+    "description": "The nearby library is understaffed in the IT department and lacks modern computers. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 30000 },
+      { "type": "People", "amount": 2 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Health Awareness Campaign",
+    "description": "A health organisation has suggested in collaborating with the centre and holding an event teaching first aid and increasing health awareness. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 5000 },
+      { "type": "People", "amount": 5 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Environment Day",
+    "description": "For the day, the community is out collecting the rubbish on nearby streets. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 2000 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Disability Access Support",
+    "description": "Few of the businesses are not easily accessible for users of wheelchairs, there is an application to build ramps for access. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 18000 }
+    ],
+    "steps": [],
+    "time": 1,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Community Park Renovation",
+    "description": "Few of the participants of the centre have mentioned the lack of maintenance the nearby park gets, they have inquired if the centre could help. Requires {m} ZAR.",
+    "resource": [
+      { "type": "Money", "amount": 10000 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Neighbourhood Safety",
+    "description": "Some people in the are have reported to the centre about dark dangerous areas at night. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 4000 },
+      { "type": "People", "amount": 4 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+  {
+    "name": "Natural Disaster Preparation",
+    "description": "Participants of the centre have showcased signs of inexperience in relation to natural disasters, some suggest hosting a training course and creating emergency kits. Requires {m} ZAR and {p} people.",
+    "resource": [
+      { "type": "Money", "amount": 14000 },
+      { "type": "People", "amount": 10 }
+    ],
+    "steps": [],
+    "time": 2,
+    "category": "Community",
+    "isChanceSquare": false
+  },
+
+  {
+    "name": "Increase in Maker's Centre Popularity ",
+    "description": "People from the local area are intrigued by the centre and decide to participate. Gain 50 people.",
+    "resource": [
+      { "type": "People", "amount": 50 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "Government Funding Scheme",
+    "description": "The government continues to support Maker's Centre and donates to strengthen its finance capabilities. Gain 250000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": 250000 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "Past Participant Problem ",
+    "description": "A past participant's business that was previously given loans by Maker's Centre went into liquidation. Lose 45000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": -45000 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "Participant Quitting",
+    "description": "Several participants stopped coming to Maker's Centre. Lose 20 people",
+    "resource": [
+      { "type": "People", "amount": -20 }
+    ],
+    "steps": [],
+    "time": 0,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  },
+  {
+    "name": "Worldwide Donation ",
+    "description": "From international donators online, the centre has amassed a substantial portion to continue community aid. Gain 750000 ZAR",
+    "resource": [
+      { "type": "Money", "amount": 750000 }
+    ],
+    "steps": [],
+    "time": 3,
+    "category": "CHANCE",
+    "isChanceSquare": true
+  }
+]
+
+

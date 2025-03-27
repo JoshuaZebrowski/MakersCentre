@@ -5,12 +5,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.graphics.g2d.Batch;
 
 import com.main.Tooltip;
 import com.main.tooltips.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,22 +22,42 @@ public class TutorialManager {
     private List<String> currentTutorialImages; // Active tutorial image list
     private int currentPage;
     private boolean active;
-    private ShapeRenderer shapeRenderer;
     private Texture currentTexture;
     private boolean allowNextPage; // True if more than one page
-    private String currentTutorialId; // Stores active tutorial ID
     private Texture whiteTexture;
+    private boolean temp = false;
+    private Batch batch;
+    private float delayTimer = 0f;
+    private boolean startDelay = false;
+
+    private List<String> queue = new ArrayList<>();
+
+    private boolean off;
 
     private TutorialManager() {
+        Tooltip.getInstance().addTooltip("TUT","tut", "Exit Tutorial", "ui/toolTips/keyboard_key_escape.png", TooltipPosition.BOTTOM_RIGHT, false, false);
+
         tutorialSets = new HashMap<>();
-        shapeRenderer = new ShapeRenderer();
         active = false;
+
+        off = false; // Remember to reset
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         whiteTexture = new Texture(pixmap);
         pixmap.dispose();
+    }
+
+
+
+    public void setBatch(Batch batch) {
+        this.batch = batch;
+    }
+
+
+    public void setTemp() {
+        temp = !temp;
     }
 
     public static TutorialManager getInstance() {
@@ -47,11 +67,19 @@ public class TutorialManager {
         return instance;
     }
 
-    /**
-     * Registers a tutorial with a unique ID.
-     * @param id A unique string ID for this tutorial.
-     * @param imagePaths List of image file paths for this tutorial.
-     */
+    public void addToQueue(String id){
+        queue.add(id);
+    }
+
+    public void setOff() {
+        this.off = !this.off;
+    }
+
+    public boolean getOff(){
+        return off;
+    }
+
+
     public void registerTutorial(String id, List<String> imagePaths) {
         if (imagePaths == null || imagePaths.isEmpty()) return;
         tutorialSets.put(id, imagePaths);
@@ -59,21 +87,22 @@ public class TutorialManager {
 
 
     public void startTutorial(String id) {
-        if (!tutorialSets.containsKey(id)) return;
 
+        delayTimer = 1f;
+
+        Gdx.app.log("TutorialManager", "Starting tutorial " + id);
+        if (!tutorialSets.containsKey(id) || off) return;
 
         Tooltip.getInstance().setTutorialMode(true);
-        currentTutorialId = id;
         currentTutorialImages = tutorialSets.get(id);
         currentPage = 0;
         active = true;
-        allowNextPage = currentTutorialImages.size() > 1; // Enable "Next Page" if multiple pages
+        allowNextPage = currentTutorialImages.size() > 1;
 
         loadCurrentImage();
         pauseGame();
         addTutorialTooltips();
     }
-
 
     private void loadCurrentImage() {
         if (currentTexture != null) {
@@ -83,36 +112,71 @@ public class TutorialManager {
     }
 
 
-    public void stopTutorial() {
-        active = false;
-        Tooltip.getInstance().setTutorialMode(false);
-        resumeGame();
-        if (currentTexture != null) {
-            currentTexture.dispose();
-        }
+    public float getDelayTimer() {
+        return delayTimer;
     }
 
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public int getMaxPage() {
+        return currentTutorialImages.size() - 1;
+    }
+
+    public void stopTutorial() {
+        if(!queue.isEmpty()){
+            Gdx.app.log("TutorialManager", "Queue isn't empty");
+            if (currentTexture != null) {
+                currentTexture.dispose();
+            }
+            startTutorial(queue.remove(0));
+        }else{
+            startDelay = true;
+            active = false;
+            if(temp){
+                setOff();
+                setTemp();
+            }
+            Tooltip.getInstance().setTutorialMode(false);
+            resumeGame();
+            if (currentTexture != null) {
+                currentTexture.dispose();
+            }
+        }
+
+    }
 
     private void addTutorialTooltips() {
-        Tooltip.getInstance().addTooltip("tut", "Exit Tutorial", "ui/toolTips/keyboard_key_escape.png", TooltipPosition.BOTTOM_RIGHT, false, false);
         if (allowNextPage) {
-            Tooltip.getInstance().addTooltip("tut", "Next Page", "ui/toolTips/keyboard_key_d.png", TooltipPosition.BOTTOM_RIGHT, false, false);
-            Tooltip.getInstance().addTooltip("tut", "< 1 / 2 > ",  TooltipPosition.BOTTOM, false, false);
+            Tooltip.getInstance().addTooltip("TUT","tut mp", "Next Page", "ui/toolTips/keyboard_key_d.png", TooltipPosition.BOTTOM_RIGHT, false, false);
+            Tooltip.getInstance().addTooltip("TUT","tut mp", "< {} / {} > ",  TooltipPosition.BOTTOM, false, false, TooltipDynamic.PAGENUMBERT);
         }
     }
 
     private void pauseGame() {
         // Logic to pause the game (e.g., setting a game state)
-        Tooltip.getInstance().setVisible("tut");
     }
 
     private void resumeGame() {
         // Logic to resume the game
-        Tooltip.getInstance().clear("tut");
+        Tooltip.getInstance().clear("tut mp");
     }
 
+    public boolean isDelayTimer() {
+        return startDelay;
+    }
 
     public void update() {
+
+        if(delayTimer > 0.01f && startDelay){
+            delayTimer -= Gdx.graphics.getDeltaTime();
+        }else if(delayTimer < 0.01f){
+            Gdx.app.log("TutorialManager", "Delay timer reset and paused");
+            delayTimer = 2f;
+            startDelay = false;
+        }
+
         if (!active) return;
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -125,27 +189,26 @@ public class TutorialManager {
                 loadCurrentImage();
             } else {
                 currentPage = 0;
+                loadCurrentImage();
+                loadCurrentImage();
             }
         }
     }
 
 
-    public void render(SpriteBatch batch, float screenWidth, float screenHeight) {
+    public void render() {
         if (!active) return;
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
 
 
         // Draw dark transparent background
 
-//        batch.setColor(0, 0, 0, 1f); // Semi-transparent black
-//        batch.draw(whiteTexture, screenWidth, screenHeight);
-//        batch.setColor(1, 1, 1, 1); // Reset color to default
-
-        shapeRenderer.begin(ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, .1f);
-        shapeRenderer.rect(0, 0, screenWidth, screenHeight);
-        shapeRenderer.end();
-
         batch.begin(); // Restart batch
+
+        batch.setColor(0, 0, 0,0.9f); // Semi-transparent black
+        batch.draw(whiteTexture,0,0, screenWidth, screenHeight);
+        batch.setColor(1, 1, 1, 1); // Reset color to default
 
 
         // Draw the tutorial image centered

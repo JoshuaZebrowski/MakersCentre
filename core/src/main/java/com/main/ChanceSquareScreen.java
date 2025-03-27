@@ -1,51 +1,62 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class ChanceSquareScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
-    private Main main; // Reference to the main game screen
-    private Task chanceTask; // The chance square task
+    private Task chanceTask;
+    private Texture whiteTexture;
 
-    public ChanceSquareScreen(Main main, Task chanceTask) {
-        this.main = main;
+    public ChanceSquareScreen(Screen previousScreen, Task chanceTask) {
+        this.previousScreen = previousScreen;
         this.chanceTask = chanceTask;
+        Skin skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
         font = new BitmapFont();
-        font.getData().setScale(4f); // Increase font size
+        font.getData().setScale(1f * GameState.getInstance().getTextScale());
         font.setColor(Color.WHITE);
 
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
+        // Create white texture for background box
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        whiteTexture = new Texture(pixmap);
+        pixmap.dispose();
 
         // Create a table to organize the content
         Table mainTable = new Table();
-        mainTable.setFillParent(true);
+        mainTable.setSize(600, 300);
+        mainTable.setPosition(Gdx.graphics.getWidth() / 2f - 300, Gdx.graphics.getHeight() / 2f - 150);
         mainTable.center();
-
 
         // Add the chance square name (yellow)
         Label taskNameLabel = new Label(chanceTask.getName(), new Label.LabelStyle(font, Color.YELLOW));
         taskNameLabel.setAlignment(Align.center);
-        taskNameLabel.setWrap(false); // Disable wrapping for the title
-        mainTable.add(taskNameLabel).left().width(800).row(); // Set a fixed width for the title
+        taskNameLabel.setWrap(false);
+        mainTable.add(taskNameLabel).width(550).padBottom(20).row();
 
         // Add the chance square description (white)
         String description = chanceTask.getDescription()
@@ -53,37 +64,42 @@ public class ChanceSquareScreen implements Screen {
             .replace("{p}", chanceTask.getResourceAmountString("People"));
         Label descriptionLabel = new Label(description, new Label.LabelStyle(font, Color.WHITE));
         descriptionLabel.setAlignment(Align.center);
-        descriptionLabel.setWrap(true); // Enable wrapping for the description
-        mainTable.add(descriptionLabel).left().width(800).row(); // Set a fixed width for the description
+        descriptionLabel.setWrap(true);
+        mainTable.add(descriptionLabel).width(550).padBottom(20).row();
 
-        // Add the main table to the stage
+        TextButton backButton = new TextButton("Continue", skin);
+        backButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
+            }
+        });
+        mainTable.add(backButton).width(150).padTop(10);
+
         stage.addActor(mainTable);
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-
     }
 
     @Override
     public void render(float delta) {
-        // Clear the screen
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw the background
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.setColor(0, 0, 0, 0.7f);
+        batch.draw(whiteTexture, Gdx.graphics.getWidth() / 2f - 300, Gdx.graphics.getHeight() / 2f - 150, 800, 400);
+        batch.setColor(1, 1, 1, 1);
         batch.end();
 
-        // Draw the stage (text and UI elements)
+        // Draw the UI stage
         stage.act(delta);
         stage.draw();
 
-        // Handle the Escape key to exit
+        // Escape key to return
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            main.resumeGame(); // Return to the main game screen
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
     }
 
@@ -106,6 +122,6 @@ public class ChanceSquareScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
+        whiteTexture.dispose();
     }
 }

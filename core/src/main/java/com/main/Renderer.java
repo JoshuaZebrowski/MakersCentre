@@ -39,9 +39,9 @@ public class Renderer {
 
     private Window playerPopup;
     private Texture makersCenter;
+    private Texture activeTask;
     private List<Player> players;
 
-    private com.main.player.playerTab tab;
 
     private Window confirmationPopup;
 
@@ -71,8 +71,6 @@ public class Renderer {
 
         createPlayerPopup();
         createConfirmationPopup();
-        this.tab = new com.main.player.playerTab(player);
-        this._main = main; // Store the reference to the Main class
     }
 
 
@@ -81,14 +79,14 @@ public class Renderer {
 
     private void loadTextures() {
         makersCenter = new Texture(Gdx.files.internal("ui/makersCenter.png"));
+        activeTask = new Texture(Gdx.files.internal("ui/fixing.png"));
     }
 
 
 
 
-    public void setPlayerTab() {
-        tab.isExpanded();
-    }
+
+
 
     public void renderBoard(List<Node> nodes) {
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -112,7 +110,14 @@ public class Renderer {
 
         for (Node node : nodes) {
             // Check if the node's task is selected by any player
-            boolean isTaskSelectedByAnyPlayer = _main.isTaskSelectedByAnyPlayer(node);
+            boolean isTaskSelectedByAnyPlayer = false;
+
+            for (Player player : players) {
+                if (player.getTasks().contains(node.getTask())) {
+                    isTaskSelectedByAnyPlayer =  true;
+                }
+            }
+
             float scaleFactor = isTaskSelectedByAnyPlayer ? 1.5f : 1.0f; // Scale up by 1.5x if selected
 
             float halfWidth = (node.size / 2) * scaleFactor;
@@ -123,12 +128,12 @@ public class Renderer {
             float bottomX = node.x + 10, bottomY = node.y + 10 - halfHeight;
             float leftX = node.x + 10 - halfWidth, leftY = node.y + 10;
 
-            // If the task is completed, set the node color to yellow
+            // If the task is completed, set the node colour to yellow
             if (node.getTask() != null && node.getTask().isCompleted()) {
                 shapeRenderer.setColor(Color.YELLOW);
             } else {
-                // Otherwise, use the node's original color
-                shapeRenderer.setColor(node.color);
+                // Otherwise, use the node's original colour
+                shapeRenderer.setColor(node.colour);
             }
 
 
@@ -137,7 +142,7 @@ public class Renderer {
             shapeRenderer.triangle(bottomX, bottomY, leftX, leftY, topX, topY);
 
             // Check if the node's task is selected by the current player
-            boolean isTaskSelectedByCurrentPlayer = _main.isTaskSelectedByCurrentPlayer(node);
+            boolean isTaskSelectedByCurrentPlayer = PlayerManager.getInstance().getCurrentPlayer().getTasks().contains(node.getTask());
 
             // Draw a white border if the task is selected by the current player
             if (isTaskSelectedByCurrentPlayer) {
@@ -153,64 +158,13 @@ public class Renderer {
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Switch back to filled rendering
             }
 
-            // Handle sub-nodes
-            if (node.subNodes != null) {
-                for (Node subNode : node.subNodes) {
-                    boolean isSubNodeTaskSelectedByAnyPlayer = _main.isTaskSelectedByAnyPlayer(subNode);
-                    float subNodeScaleFactor = isSubNodeTaskSelectedByAnyPlayer ? 1.5f : 1.0f;
 
-                    halfWidth = (subNode.size / 2) * subNodeScaleFactor;
-                    halfHeight = (subNode.size / 4) * subNodeScaleFactor;
-
-                    topX = subNode.x + 10;
-                    topY = subNode.y + 10 + halfHeight;
-                    rightX = subNode.x + 10 + halfWidth;
-                    rightY = subNode.y + 10;
-                    bottomX = subNode.x + 10;
-                    bottomY = subNode.y + 10 - halfHeight;
-                    leftX = subNode.x + 10 - halfWidth;
-                    leftY = subNode.y + 10;
-
-                    // Use the sub-node's original color
-                    shapeRenderer.setColor(subNode.color);
-
-                    // Draw the sub-node
-                    shapeRenderer.triangle(topX, topY, rightX, rightY, bottomX, bottomY);
-                    shapeRenderer.triangle(bottomX, bottomY, leftX, leftY, topX, topY);
-
-                    // Check if the sub-node's task is selected by the current player
-                    boolean isSubNodeTaskSelectedByCurrentPlayer = _main.isTaskSelectedByCurrentPlayer(subNode);
-
-                    // Draw a yellow border if the task is selected by the current player
-                    if (isSubNodeTaskSelectedByCurrentPlayer) {
-                        shapeRenderer.end(); // End the filled shape rendering
-                        shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Switch to line rendering
-                        shapeRenderer.setColor(Color.YELLOW); // Set border color to yellow
-
-                        // Draw the border around the sub-node
-                        shapeRenderer.triangle(topX, topY, rightX, rightY, bottomX, bottomY);
-                        shapeRenderer.triangle(bottomX, bottomY, leftX, leftY, topX, topY);
-
-                        shapeRenderer.end(); // End the line rendering
-                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled); // Switch back to filled rendering
-                    }
-
-                    // Draw occupants (players) on the sub-node
-                    if (subNode.occupied) {
-                        for (int i = 0; i < Math.min(4, subNode.getOccupants().size()); i++) {
-                            Player player = subNode.getOccupants().get(i);
-                            shapeRenderer.setColor(player.getColor());
-                            shapeRenderer.circle(player.playerCircleX, player.playerCircleY, circleRadius);
-                        }
-                    }
-                }
-            }
 
             // Draw occupants (players) on the node
             if (node.occupied) {
                 for (int i = 0; i < Math.min(4, node.getOccupants().size()); i++) {
                     Player player = node.getOccupants().get(i);
-                    shapeRenderer.setColor(player.getColor());
+                    shapeRenderer.setColor(player.getColour());
                     shapeRenderer.circle(player.playerCircleX, player.playerCircleY, circleRadius);
                 }
             }
@@ -235,26 +189,38 @@ public class Renderer {
                 float textureY = centerY - textureHeight / 2 + (node.size / 4);
 
                 batch.draw(makersCenter, textureX, textureY, textureWidth, textureHeight);
+            }else if(node.getTask().isActive()){
+                float scale = 0.05f;
+                float textureWidth = activeTask.getWidth() * scale;
+                float textureHeight = activeTask.getHeight() * scale;
+
+                float centerX = node.x + 10;
+                float centerY = node.y + 30;
+
+                float textureX = centerX - textureWidth / 2;
+                float textureY = centerY - textureHeight / 2 + (node.size / 4);
+
+                batch.draw(activeTask, textureX, textureY, textureWidth, textureHeight);
             }
         }
         batch.end();
     }
 
-    public void renderUI(int turn, int maxMoves, int currentMoves, String currentWeather, String currentSeason, Node currentNode, boolean attemptedTaskSelection, boolean hasMoved, boolean attemptedPrematureTurnEnd) {
+    public void renderUI(int turn, int maxMoves, int currentMoves, String currentWeather, String currentSeason, Node currentNode, boolean attemptedTaskSelection) {
         batch.setProjectionMatrix(uiCamera.combined);
         batch.begin();
 
-        font.getData().setScale(2f);
+        font.getData().setScale(1f*GameState.getInstance().textScale);
 
         // Draw weather and season information
         font.setColor(Color.YELLOW);
-        String weatherText = "Season: " + currentSeason + "\nWeather: " + currentWeather + "\nPress 'W' to view information regarding weather.";
+        String weatherText = "Season: " + currentSeason + "\nWeather: " + currentWeather;
         font.draw(batch, weatherText, 10, Gdx.graphics.getHeight() - 250);
 
         // Draw the current player's objective below the weather information
-        String objective = _main.getCurrentPlayerObjective();
+        String objective = PlayerManager.getInstance().getCurrentPlayer().getCurrentCategory();
         if (objective != null) {
-            Color objectiveColor = _main.getColorForObjective(objective);
+            Color objectiveColor = getColorForObjective(objective);
             font.setColor(objectiveColor);
 
             String objectiveText = "Current Objective: " + objective;
@@ -267,7 +233,7 @@ public class Renderer {
         }
 
         // Draw current player information
-        font.setColor(players.get(turn).getColor());
+        font.setColor(players.get(turn).getColour());
         String playerName = players.get(turn).getName();
         int hashIndex = playerName.indexOf('#');
         if (hashIndex != -1) {
@@ -317,8 +283,8 @@ public class Renderer {
         boolean isObjectiveClaimed = false;
         if (currentNode.getTask() != null) {
             String taskCategory = currentNode.getTask().getCategory();
-            isObjectiveClaimed = _main.getObjectiveOwners().containsKey(taskCategory) &&
-                _main.getObjectiveOwners().get(taskCategory) != players.get(turn);
+//            isObjectiveClaimed = _main.getObjectiveOwners().containsKey(taskCategory) &&
+//                _main.getObjectiveOwners().get(taskCategory) != players.get(turn);
         }
 
         Player currentPlayer = players.get(turn);
@@ -333,6 +299,7 @@ public class Renderer {
                     if (attemptedTaskSelection) {
                         if (currentNode.getTask().isChanceSquare()) {
                             if (!currentNode.getTask().hasBeenOpened()){
+                                Gdx.app.log("chance square not oppened", currentNode.getTask().getName());
                                 font.setColor(Color.WHITE);
                                 font.getData().setScale(2f); // Larger font size for better visibility
                                 String taskMessage = "This is a chance square, press 's' to open.";
@@ -343,6 +310,7 @@ public class Renderer {
                             }
                             else {
                                 font.setColor(Color.RED);
+                                Gdx.app.log("chance square opened", currentNode.getTask().getName());
                                 font.getData().setScale(2f); // Larger font size for better visibility
                                 String taskMessage = "This chance square has already been opened.";
                                 GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
@@ -353,8 +321,8 @@ public class Renderer {
                         } else if (!isObjectiveClaimed && (currentPlayer.getCurrentCategory() == null ||
                             currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory()))) {
                             font.setColor(Color.WHITE);
-                            font.getData().setScale(2f); // Larger font size for better visibility
-                            String taskMessage = "Task Available to Select. Press 's' to Select Task.";
+//                            font.getData().setScale(2f); // Larger font size for better visibility
+                            String taskMessage = "Task Available to Select";
                             GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
                             float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
                             float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
@@ -384,8 +352,7 @@ public class Renderer {
                         } else if (!isObjectiveClaimed && (currentPlayer.getCurrentCategory() == null ||
                             currentPlayer.getCurrentCategory().equals(currentNode.getTask().getCategory()))) {
                             font.setColor(Color.WHITE);
-                            font.getData().setScale(2f); // Larger font size for better visibility
-                            String taskMessage = "Task Available. Press 's' to Select Task.";
+                            String taskMessage = "Task Available";
                             GlyphLayout taskLayout = new GlyphLayout(font, taskMessage);
                             float taskX = Gdx.graphics.getWidth() - taskLayout.width - 20; // Right side of the screen with padding
                             float taskY = playerTabY - taskLayout.height - 50; // Positioned lower to avoid overlap
@@ -408,7 +375,7 @@ public class Renderer {
                 // Execution Phase: Show task starting prompts
                 if (currentNode.getTask().taskTaken() &&
                     currentNode.getTask().isSelected() && !currentNode.getTask().isActive() && !currentNode.getTask().isCompleted()
-                && !currentPlayer.hasActiveTask()) {
+                    && !currentPlayer.hasActiveTask()) {
                     font.setColor(Color.WHITE);
                     font.getData().setScale(2f);
                     String taskMessage = "Task Available to Start. Press 's' to Start Task.";
@@ -440,28 +407,6 @@ public class Renderer {
             }
         }
 
-        // Show the "You must use all your moves before ending your turn" message if the player tried to end their turn prematurely
-        if (attemptedPrematureTurnEnd) {
-            font.setColor(Color.RED);
-            font.getData().setScale(2f); // Larger font size for better visibility
-            String prematureMessage = "You must use all your moves before ending your turn.";
-            GlyphLayout prematureLayout = new GlyphLayout(font, prematureMessage);
-            float prematureX = Gdx.graphics.getWidth() - prematureLayout.width - 20; // Right side of the screen with padding
-            float prematureY = playerTabY - prematureLayout.height - 100; // Positioned below the task selection message
-            font.draw(batch, prematureMessage, prematureX, prematureY);
-        }
-
-        // Add a new button to open the GameEndScreen
-        TextButton gameEndButton = new TextButton("End Game", skin);
-        gameEndButton.setPosition(10, 10); // Position the button at the bottom-left corner
-        gameEndButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                ((Game) Gdx.app.getApplicationListener()).setScreen(new GameEndScreen(_main));
-            }
-        });
-
-        stage.addActor(gameEndButton);
 
         batch.end();
 
@@ -472,8 +417,23 @@ public class Renderer {
             drawPlayerPop();
         }
     }
-    public void renderToolTips() {
-        com.main.Tooltip.getInstance().render(uiCamera, viewport.getWorldWidth(), viewport.getWorldHeight());
+
+    public Color getColorForObjective(String objective) {
+        if (objective == null) {
+            return Color.WHITE; // Default color if no objective is set
+        }
+        switch (objective) {
+            case "Financial":
+                return Color.RED;
+            case "Educational":
+                return Color.GREEN;
+            case "Business":
+                return Color.BLUE;
+            case "Community":
+                return Color.PURPLE;
+            default:
+                return Color.WHITE; // Default color for unknown objectives
+        }
     }
 
     private void drawPlayerIndicators(int currentTurn) {
@@ -481,30 +441,33 @@ public class Renderer {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         final float GLOW_OFFSET = 5f;
-        final float circleRadius = 70f;
-        final float SPACER = 175f;
+        final float DEFAULT_RADIUS = 15f;
+        final float ACTIVE_RADIUS = 30f;
+        final float SPACER = 100f;
 
         int playerCount = players.size();
         float screenWidth = viewport.getWorldWidth();
-        float startX = screenWidth / 2 - ((playerCount - 1) * SPACER / 2);
-        float circleY = viewport.getWorldHeight() - circleRadius - 20;
-        float textY = circleY - circleRadius - 20;
+        float startX = screenWidth / 2 - ((playerCount - 1) * SPACER / 2); // Center circles dynamically
+        float circleY = viewport.getWorldHeight() - 50f;
+        float textY = circleY - 50f;
 
+        // Draw player indicators
         for (int i = 0; i < playerCount; i++) {
             float circleX = startX + i * SPACER;
-
+            float circleRadius = (i == currentTurn) ? ACTIVE_RADIUS : DEFAULT_RADIUS;
 
             if (i == currentTurn && playerCount > 1) {
-                shapeRenderer.setColor(Color.YELLOW);
+                shapeRenderer.setColor(Color.YELLOW);  // Glow effect
                 shapeRenderer.circle(circleX, circleY, circleRadius + GLOW_OFFSET);
             }
 
-            shapeRenderer.setColor(players.get(i).getColor());
+            shapeRenderer.setColor(players.get(i).getColour());
             shapeRenderer.circle(circleX, circleY, circleRadius);
         }
 
         shapeRenderer.end();
 
+        // Draw player names
         batch.begin();
         font.setColor(Color.WHITE);
         GlyphLayout layout = new GlyphLayout();
@@ -514,7 +477,7 @@ public class Renderer {
             String playerName = players.get(i).getName();
             int hashIndex = playerName.indexOf('#');
             if (hashIndex != -1) {
-                playerName = playerName.substring(0, hashIndex);
+                playerName = playerName.substring(0, hashIndex); // Extract name before '#'
             }
 
             layout.setText(font, playerName);
@@ -525,9 +488,6 @@ public class Renderer {
         batch.end();
     }
 
-    public void updatePlayerTab(Player player) {
-        tab.playerTarget(player);
-    }
 
     public void renderProgressBar(float progress, Color color) {
         shapeRenderer.setProjectionMatrix(uiCamera.combined);
@@ -561,13 +521,28 @@ public class Renderer {
         String task = "Task: " + (currentNode.getTask() != null ? currentNode.getTask().getName() : "No Task") + " | Number Of Sub tasks: " + (currentNode.getTask() != null && currentNode.getTask().getSteps() != null ? currentNode.getTask().getSteps().size() : 0);
         String numbTurns = "Number of turns: " + globalTurn;
         String cS = "Current number years " + years + " | Current Season: " + currentSeason;
-        String tabExpansion = "Expansion tab: " + tab.isExpanded();
+        String categoryStarted = "Category started: " + PlayerManager.getInstance().getCurrentPlayer().isObjectiveStarted();
 
         String nodeId = "Current Node Id " + currentNode.id;
         String occupants = "Current Node Occupants: ";
-        for (Player occupant : currentNode.occupants) {
-            occupants += occupant.getName() + " " + currentNode.occupants.indexOf(occupant) + " ";
+        String ownedBy = "Owned by: " + (
+                currentNode.getTask() != null && currentNode.getTask().getOwner() != null
+                        ? currentNode.getTask().getOwner().getName()
+                        : "no one"
+        );
+        String totalNumberOfTasks = "Total number of tasks: " + PlayerManager.getInstance().getCurrentPlayer().getTasks().size();
+        List<Task> tasks = PlayerManager.getInstance().getCurrentPlayer().getTasks();
+
+        StringBuilder taskListString = new StringBuilder();
+        taskListString.append("Total number of tasks: ").append(tasks.size()).append("\n");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            Task taskl = tasks.get(i);
+            taskListString.append("[").append(i).append("] ").append(taskl.getName()).append("\n");
         }
+
+        String result = taskListString.toString();
+
         font.draw(batch, fpsText, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 10);
         font.draw(batch, currentPos, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 40);
         font.draw(batch, targetPos, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 80);
@@ -576,7 +551,10 @@ public class Renderer {
         font.draw(batch, task, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 140);
         font.draw(batch, numbTurns, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 160);
         font.draw(batch, cS, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 180);
-        font.draw(batch, tabExpansion, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 200);
+        font.draw(batch, categoryStarted, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 220);
+        font.draw(batch, ownedBy, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 240);
+        font.draw(batch, result, debugDisplayX + 10, debugDisplayY + debugDisplayHeight - 280);
+
 
         batch.end();
     }
@@ -613,7 +591,7 @@ public class Renderer {
         for (Player player : players) {
             TextButton playerButton = new TextButton(player.getName(), skin);
             playerButton.getStyle().fontColor = Color.WHITE;
-            playerButton.setColor(player.getColor());
+            playerButton.setColor(player.getColour());
 
             playerButton.addListener(new ClickListener() {
                 @Override
@@ -743,7 +721,7 @@ public class Renderer {
         leftX = rotateX(leftX, leftY, centerX, centerY, cosA, sinA);
         leftY = rotateY(leftX, leftY, centerX, centerY, cosA, sinA);
 
-        shapeRenderer.setColor(node.color);
+        shapeRenderer.setColor(node.colour);
         shapeRenderer.triangle(topX, topY, rightX, rightY, bottomX, bottomY);
         shapeRenderer.triangle(bottomX, bottomY, leftX, leftY, topX, topY);
 
@@ -774,6 +752,21 @@ public class Renderer {
         font.dispose();
     }
 
+    public void renderMakersAlert(){
+        batch.begin();
+        font.getData().setScale(4f);
+        font.setColor(Color.GOLD);
+
+        String alert = "Makers Center has produced more resources \n Return to collect";
+        GlyphLayout layout = new GlyphLayout(font, alert);
+        float x = (Gdx.graphics.getWidth() - layout.width) / 2;
+        float y = (Gdx.graphics.getHeight() + layout.height) / 2;
+
+        font.draw(batch, alert, x, y + 200);
+        font.getData().setScale(1f*GameState.getInstance().textScale); // Reset font size
+        batch.end();
+    }
+
     public void renderWeatherAlert(String weatherAlertText) {
         batch.begin();
         font.getData().setScale(4f);
@@ -784,7 +777,7 @@ public class Renderer {
         float y = (Gdx.graphics.getHeight() + layout.height) / 2;
 
         font.draw(batch, weatherAlertText, x, y + 200);
-        font.getData().setScale(1f);
+        font.getData().setScale(1f*GameState.getInstance().textScale); // Reset font size
         batch.end();
     }
 
@@ -892,12 +885,6 @@ public class Renderer {
         // Make the pop-up visible
         confirmationPopup.setVisible(true);
     }
-
-
-
-
-
-
 
 
     public Stage getStage() {

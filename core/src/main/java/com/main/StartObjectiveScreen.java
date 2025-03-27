@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -18,17 +19,16 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class StartObjectiveScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
     private Runnable onConfirm; // Callback for confirmation
-    private Main main; // Reference to the main game screen
     private String objectiveCategory; // The objective category
 
 
-    public StartObjectiveScreen(Main main, String objectiveCategory, Runnable onConfirm) {
-        this.main = main;
+    public StartObjectiveScreen(Screen previousScreen, String objectiveCategory, Runnable onConfirm) {
+        this.previousScreen = previousScreen;
         this.objectiveCategory = objectiveCategory;
         this.onConfirm = onConfirm;
 
@@ -39,7 +39,6 @@ public class StartObjectiveScreen implements Screen {
         font.setColor(Color.WHITE);
 
         // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
 
         // Create a table to organize the content
         Table mainTable = new Table();
@@ -67,11 +66,12 @@ public class StartObjectiveScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Set the objectiveStarted flag to true for the current player
-                Player currentPlayer = main.getCurrentPlayer();
+                Player currentPlayer = PlayerManager.getInstance().getCurrentPlayer();
                 currentPlayer.setObjectiveStarted(true);
 
-                onConfirm.run(); // Run the confirmation logic
-                main.resumeGame(); // Return to the main game screen
+                onConfirm.run();
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
+
             }
         });
 
@@ -94,9 +94,6 @@ public class StartObjectiveScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Draw the background
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.end();
 
         // Draw the stage (text and UI elements)
         stage.act(delta);
@@ -104,7 +101,7 @@ public class StartObjectiveScreen implements Screen {
 
         // Handle the Escape key to cancel
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            main.resumeGame(); // Return to the main game screen
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
     }
 
@@ -127,6 +124,5 @@ public class StartObjectiveScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
     }
 }

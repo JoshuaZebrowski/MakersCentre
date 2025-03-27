@@ -6,14 +6,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Player {
     String name;
-    Color color;
+    Color colour;
     Node currentNode;
     List<Task> taskList;
+    List<Task> pastTaskList;
+    List<String> pastCategories;
     List<Task> pendingTasks;
     String currentCategory;
+    float amountDoanted = 0;
 
     float playerCircleX, playerCircleY;
     float playerTargetX, playerTargetY;
@@ -26,45 +30,49 @@ public class Player {
     float communityMorale; // Represents the workforce's morale, must stay above 0%
 
     // this will track visited nodes to prevent the user from moving backwards on the board
-    private List<Node> visitedNodes;
+    private Node lastVisitedNode;
 
     private Task activeTask;
 
     private boolean objectiveStarted = false;
 
-    public Player(String name, Color color) {
+    public Player(String name, Color colour) {
         this.name = name;
-        this.color = color;
+        this.colour = colour;
         this.currentNode = null;
+        this.pastTaskList = new ArrayList<>();
         this.taskList = new ArrayList<>();
         this.pendingTasks = new ArrayList<>();
+        this.pastCategories = new ArrayList<>();
         this.currentCategory = null;
 
-        this.rand = new Resource("Money", 20000000);
-        this.rand2 = new Resource("People", 1000);
+        this.rand = new Resource("Money", 500000);
+        this.rand2 = new Resource("People", 100);
         this.taskSpeed = 0; // Initially, no task is in progress
         this.communityMorale = 100; // Start with 100% morale
 
-        this.visitedNodes = new ArrayList<>(); // Initialize the list of visited nodes
+        this.lastVisitedNode = null; // Initialize the list of visited nodes
 
         this.activeTask = null;
     }
 
     // Add a method to reset the visited nodes at the start of a new turn
     public void resetVisitedNodes() {
-        visitedNodes.clear();
+        lastVisitedNode = null;
     }
 
-    // Add a method to check if a node has been visited
     public boolean hasVisited(Node node) {
-        return visitedNodes.contains(node);
+        if(lastVisitedNode != null){
+            Gdx.app.log("s", lastVisitedNode.id + " " + node.id);
+        }
+        return lastVisitedNode != null
+            && node != null
+            && lastVisitedNode.id != null
+            && lastVisitedNode.id.equals(node.id);
     }
 
-    // Add a method to mark a node as visited
     public void markVisited(Node node) {
-        if (!visitedNodes.contains(node)) {
-            visitedNodes.add(node);
-        }
+        this.lastVisitedNode = node;
     }
 
     public void setPlayerNodeCirclePos(float circleRadius) {
@@ -75,6 +83,10 @@ public class Player {
             this.playerCircleX = currentNode.x + currentNode.size / 2 + offsetX;
             this.playerCircleY = currentNode.y - circleRadius * 1.5f + offsetY;
         }
+    }
+
+    public void updateAmountDonated(double amount){
+        amountDoanted += amount;
     }
 
     public void setPlayerNodeTarget(float circleRadius) {
@@ -103,8 +115,8 @@ public class Player {
         return name;
     }
 
-    public Color getColor() {
-        return color;
+    public Color getColour() {
+        return colour;
     }
 
     public List<Task> getTasks() {
@@ -112,21 +124,24 @@ public class Player {
     }
 
 
-    public Task getCurrentTask(){
-        Task currentTask = null;
-        for (int i=0; i<taskList.size(); i++){
-            currentTask = taskList.get(i);
-        }
-        return currentTask;
-    }
-
     public void addTask(Task task) {
         if (currentCategory == null) {
-            currentCategory = task.getCategory(); // Set the current category if not already set
+            currentCategory = task.getCategory();
         }
+
+        // Check if the task already exists in the list before adding
+        for (Task existingTask : taskList) {
+            if (existingTask.equals(task)) {
+                System.out.println("Task " + task.getName() + " is already in the list.");
+                return;
+            }
+        }
+
+        // If not a duplicate, add the task to the list and mark it as selected
         taskList.add(task);
-        task.setSelected(true); // Mark the task as selected
+        task.setSelected(true);
     }
+
 
     public boolean hasSubTasks(Task task) {
         for (Task subtask : task.getSteps()) {
@@ -189,6 +204,16 @@ public class Player {
                 return false; // At least one task in the category is incomplete
             }
         }
+
+
+        currentCategory = null;
+        activeTask = null;
+        GameState.getInstance().updateCompletedAllCategories();
+        pastTaskList.addAll(taskList);
+        taskList.clear();
+        pastCategories.add(currentCategory);
+        objectiveStarted = false;
+
 
         Gdx.app.log("DEBUG", "Player " + name + " has completed all tasks in the " + currentCategory + " category.");
         return true; // All tasks in the category are complete
@@ -264,25 +289,47 @@ public class Player {
 
     }
 
+    public void progressTaskPayedOtherPlayer(Task task) {
+        if (activeTask != null) {
+            // Deduct the next payment
+            double moneyCost = activeTask.getResourceAmount("Money") / activeTask.getTime();
+            activeTask.deductRemainingMoneyCost(moneyCost);
+            activeTask.decrementRemainingTurns();
+
+            Gdx.app.log("DEBUG", "Progressed " + activeTask.getName() + ". Remaining turns: " + activeTask.getRemainingTurns());
+
+            // Check if the task is complete
+            if (activeTask.getRemainingTurns() <= 0) {
+                activeTask.setCompleted(true);
+                activeTask.setActive(false);
+                activeTask = null; // Clear the active task
+                SoundManager.getInstance().playSound("taskFinished");
+                Gdx.app.log("DEBUG", "Task completed.");
+            }
+        }
+    }
+
     public void progressTask() {
         if (activeTask != null) {
             // Deduct the next payment
             double moneyCost = activeTask.getResourceAmount("Money") / activeTask.getTime();
-                rand.deductAmount(moneyCost);
-                activeTask.deductRemainingMoneyCost(moneyCost);
-                activeTask.decrementRemainingTurns();
+            rand.deductAmount(moneyCost);
+            activeTask.deductRemainingMoneyCost(moneyCost);
+            activeTask.decrementRemainingTurns();
 
-                Gdx.app.log("DEBUG", "Progressed " + activeTask.getName() + ". Remaining turns: " + activeTask.getRemainingTurns());
+            Gdx.app.log("DEBUG", "Progressed " + activeTask.getName() + ". Remaining turns: " + activeTask.getRemainingTurns());
 
-                // Check if the task is complete
-                if (activeTask.getRemainingTurns() <= 0) {
-                    activeTask.setCompleted(true);
-                    activeTask.setActive(false);
-                    activeTask = null; // Clear the active task
-                    Gdx.app.log("DEBUG", "Task completed.");
-                }
+            // Check if the task is complete
+            if (activeTask.getRemainingTurns() <= 0) {
+                activeTask.setCompleted(true);
+                activeTask.setActive(false);
+                activeTask = null; // Clear the active task
+                SoundManager.getInstance().playSound("taskFinished");
+
+                Gdx.app.log("DEBUG", "Task completed.");
             }
         }
+    }
 
 
     // Add a method to check if the player has an active task

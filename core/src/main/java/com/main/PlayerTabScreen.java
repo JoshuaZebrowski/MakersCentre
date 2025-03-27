@@ -1,5 +1,6 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -8,36 +9,28 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class PlayerTabScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
-    private Main main; // Reference to the main game screen
     private Player player; // Reference to the current player
 
-    public PlayerTabScreen(Main main, Player player) {
-        this.main = main;
-        this.player = player;
+    public PlayerTabScreen(Screen previousScreen) {
+        this.previousScreen = previousScreen;
+        this.player = PlayerManager.getInstance().getCurrentPlayer();
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
         font = new BitmapFont();
-        font.getData().setScale(1.5f); // Increase font size
         font.setColor(Color.WHITE);
-
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
 
         // Create a table to organize the content
         Table mainTable = new Table();
@@ -118,14 +111,14 @@ public class PlayerTabScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
+        Tooltip.getInstance().clear();
+
         // Clear the screen
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Draw the background
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.end();
 
         // Draw the stage (text and UI elements)
         stage.act(delta);
@@ -133,8 +126,12 @@ public class PlayerTabScreen implements Screen {
 
         // Handle the Escape key or 'P' key to close the screen
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyJustPressed(Input.Keys.T)) {
-            main.resumeGame(); // Return to the main game screen
+            GameState.getInstance().setCurrentScreen("MS");
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
+
+        Tooltip.getInstance().render(GameState.getInstance().getUiCamera(), GameState.getInstance().getViewport().getWorldWidth(), GameState.getInstance().getViewport().getWorldHeight());
+
     }
 
     @Override
@@ -156,6 +153,5 @@ public class PlayerTabScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
     }
 }

@@ -9,23 +9,23 @@ import java.util.List;
 public class Node {
     float x, y;
     float size;
-    List<Node> links;
+    public List<Node> links;
     String id;
-    Color color;
-    boolean occupied;
+    public Color colour;
+    public boolean occupied;
     List<Player> occupants;
     boolean isJobCentre;
     boolean highlighted = false;
     List<Node> subNodes;
     Task task;
 
-    Node(float x, float y, String id, float size) {
+    public Node(float x, float y, String id, float size) {
         this.x = x;
         this.y = y;
         this.id = id;
         this.size = size;
         this.links = new ArrayList<>();
-        this.color = Color.BLUE;
+        this.colour = Color.BLUE;
         this.occupied = false;
         this.isJobCentre = false;
         this.occupants = new ArrayList<>();
@@ -56,7 +56,7 @@ public class Node {
         this.isJobCentre = isJobCentre;
     }
 
-    void addLink(Node node) {
+    public void addLink(Node node) {
         links.add(node);
     }
 
@@ -90,31 +90,35 @@ public class Node {
     }
 
     public void updateColour() {
+        String hex;
+
         if (isJobCentre) {
-            this.color = Color.YELLOW; // Starting node is yellow
+            hex = GameState.getInstance().getColourHex("Yellow");
         } else if (task != null) {
             switch (task.getCategory()) {
                 case "Financial":
-                    this.color = Color.RED;
+                    hex = GameState.getInstance().getColourHex("Red");
                     break;
                 case "Educational":
-                    this.color = Color.GREEN;
+                    hex = GameState.getInstance().getColourHex("Green");
                     break;
                 case "Business":
-                    this.color = Color.BLUE;
+                    hex = GameState.getInstance().getColourHex("Blue");
                     break;
                 case "Community":
-                    this.color = Color.PURPLE;
+                    hex = GameState.getInstance().getColourHex("Purple");
                     break;
                 case "CHANCE":
-                    this.color = Color.LIGHT_GRAY;
+                    hex = "#D3D3D3";
                     break;
                 default:
-                    this.color = Color.WHITE;
+                    hex = GameState.getInstance().getColourHex("White");
             }
         } else {
-            this.color = Color.WHITE; // Default color for nodes without tasks
+            hex = GameState.getInstance().getColourHex("White");
         }
+
+        this.colour = com.badlogic.gdx.graphics.Color.valueOf(hex);
     }
 
     public Task getTask() {
@@ -124,15 +128,8 @@ public class Node {
     public void setTask(Task task) {
         if (this.task == null) { // Only set the task if it hasn't been set before
             this.task = task;
-            updateColour(); // Update the node's color based on the task
+            updateColour(); // Update the node's colour based on the task
         }
     }
 
-    public boolean isHighlighted() {
-        return highlighted;
-    }
-
-    public void setHighlighted(boolean highlighted) {
-        this.highlighted = highlighted;
-    }
 }

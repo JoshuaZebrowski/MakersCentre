@@ -6,6 +6,7 @@ public class PlayerManager {
     private static PlayerManager instance;
 
     private ArrayList<Player> players;
+    private int currentPlayerIndex = 0;
 
     private PlayerManager() {
         players = new ArrayList<>();
@@ -17,6 +18,15 @@ public class PlayerManager {
             instance = new PlayerManager();
         }
         return instance;
+    }
+
+    public Player getCurrentPlayer(){
+
+        return players.get(currentPlayerIndex);
+    }
+
+    public void updateCurrentPlayer(int index) {
+        currentPlayerIndex = index;
     }
 
     // add a player to the list

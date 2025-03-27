@@ -4,12 +4,7 @@ import java.util.Random;
 
 public class Summer {
 
-    int[] highTemps = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-    int[] highTempsFreq = {5, 6, 4, 7, 7, 8, 16, 11, 10, 8, 6, 8, 4};
-    double[] probabilities = {0.05, 0.06, 0.04, 0.07, 0.07, 0.08, 0.16, 0.11, 0.10, 0.08, 0.06, 0.08, 0.04}; //stores calculated probabilities given previous two arrays
-
     String[] weather = {"Sunny", "Partly Cloudy", "Cloudy", "Rainy", "Thunderstorms"};
-    int[] weatherFreq = {46, 23, 11, 6, 1}; //stores frequency of each weather type
     double[] weatherProbabilities = {0.5, 0.25, 0.15, 0.08, 0.02}; //stores calculated probabilities given previous two arrays
 
     //generates a random weather based on the probabilities
@@ -50,17 +45,5 @@ public class Summer {
         }
     }
 
-    //generates a random temperature based on the probabilities
-    public int generateTemperature() {
-        Random rand = new Random();
-        double randomValue = rand.nextDouble();
-        double cumulativeProbability = 0.0;
-        for (int i = 0; i < probabilities.length; i++) {
-            cumulativeProbability += probabilities[i];
-            if (randomValue <= cumulativeProbability) {
-                return highTemps[i];
-            }
-        }
-        return highTemps[highTemps.length - 1]; // Fallback in case of rounding errors
-    }
+
 }

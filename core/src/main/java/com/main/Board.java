@@ -28,7 +28,7 @@ public class Board {
         chanceSquares = new ArrayList<>(allTasks.subList(41, 45));
 
         int gridRows = 6; // 6 rows
-        int gridCols = 7; // 7 columns (6x7 = 42 nodes)
+        int gridCols = 7; // 7 columns : 42 nodes
         float spacing = 100;
 
         // Calculate the starting position for the main board
@@ -39,9 +39,9 @@ public class Board {
         float startingNodeX = startX - (gridCols / 2f) * (spacing / 6); // Center it horizontally relative to the board
         float startingNodeY = startY - (spacing / 3); // Position it slightly below the board
         Node startingNode = new Node(startingNodeX, startingNodeY, "Node 0", 20);
-        startingNode.setIsJobCentre(true); // Mark this node as the Makers Center
-        startingNode.setTask(null); // Ensure the starting node has no task
-        startingNode.updateColour(); // Update its color (should be yellow)
+        startingNode.setIsJobCentre(true);
+        startingNode.setTask(null);
+        startingNode.updateColour();
         nodes.add(startingNode); // Add the starting node to the list
 
         // Shuffle the chance squares to ensure random distribution

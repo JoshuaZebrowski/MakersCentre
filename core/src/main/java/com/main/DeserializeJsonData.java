@@ -9,8 +9,11 @@ import java.util.ArrayList;
 
 public class DeserializeJsonData {
     public static ArrayList<Task> initializeTaskClass() throws Exception {
-        File file = new File(Gdx.files.internal("assets/data/taskExample.json").file().getAbsolutePath());
+        File file = new File(Gdx.files.internal("assets/data/tasks.json").file().getAbsolutePath());
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(file, new TypeReference<ArrayList<Task>>() {});
+        return objectMapper.readValue(file, new TypeReference<>() {
+        });
     }
+
+
 }

@@ -1,10 +1,12 @@
 package com.main;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -18,28 +20,30 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class TaskSelectionScreen implements Screen {
+    private Screen previousScreen;
     private Stage stage;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture backgroundTexture; // Background texture
     private Runnable onConfirm; // Callback for confirmation
-    private Main main; // Reference to the main game screen
     private Task task; // The task to be confirmed
+    private Texture whiteTexture;
 
-
-    public TaskSelectionScreen(Main main, Task task, Runnable onConfirm) {
-        this.main = main;
+    public TaskSelectionScreen(Screen previousScreen, Task task, Runnable onConfirm) {
+        this.previousScreen = previousScreen;
         this.task = task;
         this.onConfirm = onConfirm;
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        whiteTexture = new Texture(pixmap);
+        pixmap.dispose();
 
         stage = new Stage(new ScreenViewport());
         batch = new SpriteBatch();
         font = new BitmapFont();
         font.getData().setScale(1.5f); // Increase font size
         font.setColor(Color.WHITE);
-
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("ui/weatherBackground.png"));
 
         // Create a table to organize the content
         Table mainTable = new Table();
@@ -75,7 +79,8 @@ public class TaskSelectionScreen implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 onConfirm.run(); // Run the confirmation logic
-                main.resumeGame(); // Return to the main game screen
+                SoundManager.getInstance().playSound("click");
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
             }
         });
 
@@ -85,7 +90,7 @@ public class TaskSelectionScreen implements Screen {
         cancelButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.resumeGame(); // Return to the main game screen
+                ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
             }
         });
 
@@ -103,23 +108,24 @@ public class TaskSelectionScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // Clear the screen
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Draw the background
+        Tooltip.getInstance().clear();
+
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.setColor(0, 0, 0, 0.2f); // Dark semi-transparent
+        batch.draw(whiteTexture, Gdx.graphics.getWidth() / 2f - 400, Gdx.graphics.getHeight() / 2f - 150, 900, 400);
+        batch.setColor(1, 1, 1, 1); // Reset color
         batch.end();
 
-        // Draw the stage (text and UI elements)
         stage.act(delta);
         stage.draw();
 
         // Handle the Escape key to cancel
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            main.resumeGame(); // Return to the main game screen
+            ((Game) Gdx.app.getApplicationListener()).setScreen(previousScreen);
         }
+        Tooltip.getInstance().render(GameState.getInstance().getUiCamera(), GameState.getInstance().getViewport().getWorldWidth(), GameState.getInstance().getViewport().getWorldHeight());
+
     }
 
     @Override
@@ -141,6 +147,5 @@ public class TaskSelectionScreen implements Screen {
         stage.dispose();
         batch.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose of the background texture
     }
 }

@@ -53,19 +53,4 @@ public class WeatherManager {
         }
     }
 
-    public double[] getWeatherEffects(String weather) {
-        // Return the effects of the weather on resource efficiency, task speed, and community morale
-        switch (currentSeason) {
-            case "Spring":
-                return new Spring().weatherEffects(weather);
-            case "Summer":
-                return new Summer().weatherEffects(weather);
-            case "Autumn":
-                return new Autumn().weatherEffects(weather);
-            case "Winter":
-                return new Winter().weatherEffects(weather);
-            default:
-                return new double[]{1, 1, 1}; // Default effects
-        }
-    }
 }
